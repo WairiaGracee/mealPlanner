@@ -18,7 +18,7 @@ export default function TextField({
       </label>
       <input
         id={id}
-        className={`mt-2 w-full rounded-lg border border-gold/25 bg-charcoal-light px-4 py-3 text-sm text-cream placeholder:text-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold ${className}`}
+        className={`mt-2 w-full rounded-lg border border-line bg-white px-4 py-3 text-sm text-ink placeholder:text-inkMuted focus-visible:outline focus-visible:outline-2 focus-visible:outline-forest ${className}`}
         {...rest}
       />
     </div>

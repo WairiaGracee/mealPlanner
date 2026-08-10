@@ -19,7 +19,6 @@ const NAV_ITEMS = [
 export default function SideNav({ isOpen, onClose }: SideNavProps) {
   const navigate = useNavigate();
 
-  // Lock body scroll while the overlay is open
   useEffect(() => {
     document.body.style.overflow = isOpen ? "hidden" : "";
     return () => {
@@ -31,17 +30,17 @@ export default function SideNav({ isOpen, onClose }: SideNavProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex flex-col bg-charcoal-deep"
+      className="fixed inset-0 z-50 flex flex-col bg-forest-deep"
       role="dialog"
       aria-modal="true"
       aria-label="Site navigation"
     >
       <div className="flex items-center justify-between px-6 py-6 md:px-12">
-        <Logo />
+        <Logo className="h-16 w-auto sm:h-18 brightness-0 invert" />
         <button
           onClick={onClose}
           aria-label="Close menu"
-          className="flex h-10 w-10 items-center justify-center text-2xl text-cream transition-colors hover:text-gold focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold"
+          className="flex h-10 w-10 items-center justify-center text-2xl text-offwhite transition-colors hover:text-gold focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold"
         >
           ×
         </button>
@@ -53,40 +52,38 @@ export default function SideNav({ isOpen, onClose }: SideNavProps) {
             key={item.href}
             href={item.href}
             onClick={onClose}
-            className="group flex items-baseline gap-4 border-b border-cream/10 py-4 font-display text-4xl text-cream/90 transition-colors hover:text-gold md:text-5xl"
+            className="group flex items-baseline gap-4 border-b border-offwhite/10 py-4 font-display text-4xl text-offwhite/90 transition-colors hover:text-gold md:text-5xl"
           >
-            <span className="font-mono text-xs text-clay">
-              0{i + 1}
-            </span>
+            <span className="font-mono text-xs text-gold">0{i + 1}</span>
             {item.label}
           </a>
         ))}
       </nav>
 
-      <div className="flex flex-col gap-3 border-t border-cream/10 px-6 py-6 sm:hidden">
+      <div className="flex flex-col gap-3 border-t border-offwhite/10 px-6 py-6 sm:hidden">
         <Button
           variant="outline"
+          className="w-full justify-center border-offwhite/40 text-offwhite hover:border-offwhite hover:text-offwhite"
           onClick={() => {
             onClose();
             navigate("/login");
           }}
-          className="w-full justify-center"
         >
           Log in
         </Button>
         <Button
           variant="primary"
+          className="w-full justify-center bg-gold text-forest-deep hover:bg-offwhite"
           onClick={() => {
             onClose();
             navigate("/register");
           }}
-          className="w-full justify-center"
         >
           Get started
         </Button>
       </div>
 
-      <div className="flex flex-col gap-2 border-t border-cream/10 px-6 py-6 text-sm text-muted md:flex-row md:items-center md:justify-between md:px-12">
+      <div className="flex flex-col gap-2 border-t border-offwhite/10 px-6 py-6 text-sm text-offwhite/60 md:flex-row md:items-center md:justify-between md:px-12">
         <span>Nairobi · Mombasa · Kisumu</span>
         <span>New plans every Sunday</span>
       </div>

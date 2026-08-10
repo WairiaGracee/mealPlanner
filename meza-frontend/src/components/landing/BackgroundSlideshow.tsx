@@ -6,6 +6,10 @@ interface BackgroundSlideshowProps {
   intervalMs?: number;
   /** "fade" crossfades in place; "slide" pushes the new image in from the right */
   variant?: "fade" | "slide";
+  /** "dark" tints the photos so light text stays readable over them;
+   *  "none" shows the photos as-is, for use inside a contained card
+   *  where text doesn't sit on top of the image. */
+  overlay?: "dark" | "none";
 }
 
 /**
@@ -17,6 +21,7 @@ export default function BackgroundSlideshow({
   images,
   intervalMs = 6000,
   variant = "fade",
+  overlay = "dark",
 }: BackgroundSlideshowProps) {
   const [index, setIndex] = useState(0);
 
@@ -35,8 +40,6 @@ export default function BackgroundSlideshow({
       {images.map((src, i) => {
         const isActive = i === index;
 
-        // For "slide", the previous image parks off-screen left as it
-        // exits, every other image waits off-screen right, ready to enter.
         const isExitingLeft =
           variant === "slide" &&
           i === (index - 1 + images.length) % images.length;
@@ -59,7 +62,6 @@ export default function BackgroundSlideshow({
                 ? {
                     transitionProperty: "opacity, transform",
                     opacity: isActive ? 1 : 0,
-                    // Subtle Ken Burns drift on the active slide only
                     transform: isActive ? "scale(1.06)" : "scale(1)",
                   }
                 : {
@@ -71,11 +73,12 @@ export default function BackgroundSlideshow({
         );
       })}
 
-      {/* Colour overlay: darkens + tints the photos so cream/gold text
-          stays readable over any image, and ties the photos back into
-          the charcoal/gold palette instead of looking pasted-on. */}
-      <div className="absolute inset-0 bg-charcoal-deep/70" />
-      <div className="absolute inset-0 bg-gradient-to-t from-charcoal-deep via-charcoal-deep/30 to-transparent" />
+      {overlay === "dark" && (
+        <>
+          <div className="absolute inset-0 bg-forest-deep/60" />
+          <div className="absolute inset-0 bg-gradient-to-t from-forest-deep via-forest-deep/25 to-transparent" />
+        </>
+      )}
     </div>
   );
 }

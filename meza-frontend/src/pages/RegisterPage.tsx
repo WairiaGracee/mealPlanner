@@ -35,7 +35,7 @@ export default function RegisterPage() {
       footer={
         <>
           Already have an account?{" "}
-          <Link to="/login" className="text-gold hover:text-cream">
+          <Link to="/login" className="text-forest hover:text-forest-deep">
             Log in
           </Link>
         </>
@@ -44,9 +44,9 @@ export default function RegisterPage() {
       <GoogleButton label="Sign up with Google" />
 
       <div className="my-6 flex items-center gap-3 font-mono text-xs uppercase tracking-wide text-muted">
-        <span className="h-px flex-1 bg-cream/10" />
+        <span className="h-px flex-1 bg-line" />
         or
-        <span className="h-px flex-1 bg-cream/10" />
+        <span className="h-px flex-1 bg-line" />
       </div>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">

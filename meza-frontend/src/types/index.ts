@@ -4,6 +4,7 @@ export interface BlogPost {
   excerpt: string;
   date: string;
   readTime: string;
+  image?: string;
   tag: string;
 }
 

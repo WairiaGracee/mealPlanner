@@ -24,7 +24,7 @@ export default function LoginPage() {
       footer={
         <>
           Don&rsquo;t have an account?{" "}
-          <Link to="/register" className="text-gold hover:text-cream">
+          <Link to="/register" className="text-forest hover:text-forest-deep">
             Create one
           </Link>
         </>
@@ -33,9 +33,9 @@ export default function LoginPage() {
       <GoogleButton />
 
       <div className="my-6 flex items-center gap-3 font-mono text-xs uppercase tracking-wide text-muted">
-        <span className="h-px flex-1 bg-cream/10" />
+        <span className="h-px flex-1 bg-line" />
         or
-        <span className="h-px flex-1 bg-cream/10" />
+        <span className="h-px flex-1 bg-line" />
       </div>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">

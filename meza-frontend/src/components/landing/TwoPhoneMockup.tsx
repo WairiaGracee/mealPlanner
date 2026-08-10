@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 import Logo from "../ui/Logo";
-import { heroImages } from "../../data/heroImages";
 
 function PhoneFrame({
   children,
@@ -11,14 +10,16 @@ function PhoneFrame({
 }) {
   return (
     <div className={`relative w-[220px] ${className}`}>
-      {/* Side buttons — purely decorative, sit outside the bezel */}
-      <span className="absolute -left-[3px] top-20 h-8 w-[3px] rounded-l-sm bg-charcoal-light" />
-      <span className="absolute -left-[3px] top-32 h-12 w-[3px] rounded-l-sm bg-charcoal-light" />
-      <span className="absolute -right-[3px] top-28 h-16 w-[3px] rounded-r-sm bg-charcoal-light" />
+      {/* Side buttons — purely decorative, sit outside the bezel.
+          Kept dark regardless of theme, since that's just what phone
+          hardware looks like. */}
+      <span className="absolute -left-[3px] top-20 h-8 w-[3px] rounded-l-sm bg-forest-deep" />
+      <span className="absolute -left-[3px] top-32 h-12 w-[3px] rounded-l-sm bg-forest-deep" />
+      <span className="absolute -right-[3px] top-28 h-16 w-[3px] rounded-r-sm bg-forest-deep" />
 
       {/* Metallic-edge bezel */}
-      <div className="rounded-[2.1rem] bg-gradient-to-br from-charcoal-light via-charcoal-deep to-black p-[5px] shadow-[0_25px_50px_-12px_rgba(0,0,0,0.6)]">
-        <div className="relative h-[420px] overflow-hidden rounded-[1.8rem] bg-charcoal-deep">
+      <div className="rounded-[2.1rem] bg-gradient-to-br from-forest-deep via-forest-deep to-black p-[5px] shadow-[0_25px_50px_-12px_rgba(0,0,0,0.6)]">
+        <div className="relative h-[420px] overflow-hidden rounded-[1.8rem] bg-forest-deep">
           {/* Dynamic-island style notch */}
           <div className="absolute left-1/2 top-2 z-20 h-6 w-24 -translate-x-1/2 rounded-full bg-black" />
 
@@ -35,42 +36,32 @@ function PhoneFrame({
 
 function LandingScreen() {
   return (
-    <div className="relative flex h-full flex-col text-cream">
-      <img
-        src={heroImages[0]}
-        alt=""
-        aria-hidden="true"
-        className="absolute inset-0 h-full w-full object-cover"
-      />
-      <div className="absolute inset-0 bg-gradient-to-b from-charcoal-deep/55 to-charcoal-deep/85" />
-
-      <div className="relative flex h-full flex-col">
-        <div className="flex items-center justify-between p-3 pt-9">
-          <Logo className="h-4 w-auto" />
-          <div className="flex flex-col gap-1">
-            <span className="h-px w-4 bg-cream" />
-            <span className="h-px w-4 bg-cream" />
-          </div>
+    <div className="flex h-full flex-col bg-offwhite p-3 pt-9 text-ink">
+      <div className="flex items-center justify-between">
+        <Logo className="h-4 w-auto" />
+        <div className="flex flex-col gap-1">
+          <span className="h-px w-4 bg-ink" />
+          <span className="h-px w-4 bg-ink" />
         </div>
+      </div>
 
-        {/* Centered content fills the remaining space */}
-        <div className="flex flex-1 flex-col items-center justify-center px-4 text-center">
-          <p className="font-mono text-[7px] uppercase tracking-widest text-gold">
-            Eat better. Feel better. Live better.
-          </p>
-          <p className="mt-2 font-display text-3xl leading-[0.95] drop-shadow-md">
-            TASTE OF
-            <br />
-            <span className="italic text-gold">HOME</span>
-          </p>
-          <div className="mt-5 flex gap-2">
-            <span className="rounded-full bg-gold px-3 py-1.5 font-mono text-[8px] font-medium uppercase tracking-wide text-charcoal-deep">
-              Get your first plan
-            </span>
-            <span className="rounded-full border border-cream/50 px-3 py-1.5 font-mono text-[8px] uppercase tracking-wide text-cream">
-              See how it works
-            </span>
-          </div>
+      {/* Mirrors the real hero's copy and light styling */}
+      <div className="flex flex-1 flex-col items-center justify-center px-2 text-center">
+        <p className="font-mono text-[6px] uppercase tracking-widest text-forest">
+          Eat better. Feel better. Live better.
+        </p>
+        <p className="mt-2 font-display text-xl leading-[1.05] text-ink">
+          Healthy Kenyan
+          <br />
+          <span className="italic text-forest">Food, Planned.</span>
+        </p>
+        <div className="mt-4 flex gap-1.5">
+          <span className="rounded-full bg-forest px-2.5 py-1.5 font-mono text-[7px] uppercase tracking-wide text-offwhite">
+            Get your first plan
+          </span>
+          <span className="rounded-full border border-forest/40 px-2.5 py-1.5 font-mono text-[7px] uppercase tracking-wide text-ink">
+            See how it works
+          </span>
         </div>
       </div>
     </div>
@@ -85,7 +76,7 @@ function DashboardScreen() {
   ];
 
   return (
-    <div className="h-full bg-white p-4 pt-9 text-charcoal-deep">
+    <div className="h-full bg-white p-4 pt-9 text-ink">
       <p className="font-mono text-[11px] font-medium uppercase tracking-wide text-clay">
         This week
       </p>
@@ -94,19 +85,19 @@ function DashboardScreen() {
         {meals.map(([day, meal]) => (
           <div
             key={day}
-            className="flex items-center justify-between rounded-lg bg-charcoal-deep/5 px-3 py-2 text-xs"
+            className="flex items-center justify-between rounded-lg bg-forest-light px-3 py-2 text-xs"
           >
-            <span className="font-mono text-muted">{day}</span>
+            <span className="font-mono text-inkMuted">{day}</span>
             <span className="font-medium">{meal}</span>
           </div>
         ))}
       </div>
 
-      <div className="mt-4 rounded-xl bg-charcoal-deep/5 p-3.5">
-        <p className="text-[11px] text-charcoal-deep/50">Weekly progress</p>
+      <div className="mt-4 rounded-xl bg-forest-light p-3.5">
+        <p className="text-[11px] text-inkMuted">Weekly progress</p>
         <div className="mt-2 flex items-center gap-2">
-          <div className="h-2 flex-1 rounded-full bg-charcoal-deep/10">
-            <div className="h-2 w-4/6 rounded-full bg-sukuma" />
+          <div className="h-2 flex-1 rounded-full bg-ink/10">
+            <div className="h-2 w-4/6 rounded-full bg-forest" />
           </div>
           <span className="text-xs font-semibold">71%</span>
         </div>
@@ -127,8 +118,6 @@ function DashboardScreen() {
 export default function TwoPhoneMockup() {
   return (
     <div className="relative mx-auto flex h-[480px] w-full max-w-md items-center justify-center">
-      {/* Soft glow behind the phones — adds depth so the composition doesn't
-          feel flat against the section background */}
       <div
         className="pointer-events-none absolute h-72 w-72 rounded-full bg-gold/25 blur-3xl"
         aria-hidden="true"

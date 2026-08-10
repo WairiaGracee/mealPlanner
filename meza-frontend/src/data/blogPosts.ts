@@ -9,6 +9,8 @@ export const blogPosts: BlogPost[] = [
     date: "Jul 6, 2026",
     readTime: "4 min read",
     tag: "Nutrition",
+    image:
+      "https://images.unsplash.com/photo-1666181551815-b9adecb24e46?auto=format&fit=crop&w=800&h=600&q=80",
   },
   {
     id: "post-2",
@@ -18,6 +20,8 @@ export const blogPosts: BlogPost[] = [
     date: "Jun 29, 2026",
     readTime: "6 min read",
     tag: "Health",
+    image:
+      "https://images.unsplash.com/photo-1569420077790-afb136b3bb8c?auto=format&fit=crop&w=800&h=600&q=80",
   },
   {
     id: "post-3",
@@ -27,5 +31,7 @@ export const blogPosts: BlogPost[] = [
     date: "Jun 21, 2026",
     readTime: "5 min read",
     tag: "Budgeting",
+    image:
+      "https://images.unsplash.com/photo-1734255026082-82fdc81991f0?auto=format&fit=crop&w=800&h=600&q=80",
   },
 ];

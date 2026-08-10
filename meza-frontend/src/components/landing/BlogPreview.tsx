@@ -6,7 +6,7 @@ import BlogCard from "./BlogCard";
 
 export default function BlogPreview() {
   return (
-    <section id="blog" className="px-6 pt-15 pb-20 md:px-12">
+    <section id="blog" className="bg-offwhite px-6 py-20 md:px-12">
       <div className="flex items-end justify-between">
         <SectionLabel>From the weekly journal</SectionLabel>
         <Button variant="ghost" className="hidden px-0 sm:inline-flex">

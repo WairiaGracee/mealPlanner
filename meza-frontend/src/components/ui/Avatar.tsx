@@ -4,9 +4,9 @@ interface AvatarProps {
 }
 
 const PALETTE = [
-  { bg: "bg-gold", text: "text-charcoal-deep" },
-  { bg: "bg-clay", text: "text-cream" },
-  { bg: "bg-sukuma", text: "text-charcoal-deep" },
+  { bg: "bg-gold", text: "text-ink" },
+  { bg: "bg-clay", text: "text-offwhite" },
+  { bg: "bg-forest", text: "text-offwhite" },
 ];
 
 function getInitials(name: string) {

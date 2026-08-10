@@ -1,7 +1,7 @@
 export default function WavyLine() {
   return (
     <svg
-      className="pointer-events-none absolute inset-x-0 top-1/3 z-0 h-40 w-full text-clay/25 md:top-1/4"
+      className="pointer-events-none absolute inset-x-0 top-1/3 z-0 h-40 w-full text-forest/20 md:top-1/4"
       viewBox="0 0 1440 240"
       preserveAspectRatio="none"
       aria-hidden="true"
