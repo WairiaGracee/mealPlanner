@@ -109,7 +109,7 @@ export interface TodayMeal {
   name: string;
   kcal: number;
   minutes: number;
-  image:string
+  image: string;
 }
 
 export interface DayPlan {
@@ -139,7 +139,7 @@ export interface ChecklistItem {
 export interface RecipeSummary {
   name: string;
   minutes: number;
-  emoji?:string
+  emoji?: string;
   image: string;
 }
 
@@ -180,6 +180,7 @@ export interface NutritionOverview {
   avgCalories: number;
   targetCalories: number;
   macros: MacroStat[];
+  activeMinutes?: number;
 }
 
 export interface HydrationGoal {
@@ -194,4 +195,3 @@ export interface UpcomingMeal {
   emoji: string;
   image?: string;
 }
-

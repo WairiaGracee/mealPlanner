@@ -1,6 +1,7 @@
-import type { SVGProps } from "react";
+import type { SVGProps, FC } from "react";
 
 type IconProps = SVGProps<SVGSVGElement>;
+export type IconComponent = FC<IconProps>;
 
 const base = {
   viewBox: "0 0 24 24",
@@ -235,11 +236,63 @@ export function IconChevronDown(props: IconProps) {
   );
 }
 
+export function IconChevronRight(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <path d="m9 6 6 6-6 6" />
+    </svg>
+  );
+}
+
 export function IconLeaf(props: IconProps) {
   return (
     <svg {...base} {...props}>
       <path d="M5 19c0-8 5-13.5 14-14-1 8.5-6.5 13-14 14Z" />
       <path d="M5 19c2-2.5 4.5-5 9-8" />
+    </svg>
+  );
+}
+
+export function IconActivity(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M3 12h4l2-7 4 14 2-7h6" />
+    </svg>
+  );
+}
+
+export function IconFlame(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M12 21c4 0 6.5-2.6 6.5-6.2 0-2.9-1.8-4.7-2.8-6.6-.7 1.6-1.7 2.3-2.5 1.5.6-2.6-.4-5-3-6.7.4 2.5-.7 4.4-2.3 6.2C6.3 10.9 5.5 12.6 5.5 14.8 5.5 18.4 8 21 12 21Z" />
+    </svg>
+  );
+}
+
+export function IconPieChart(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M12 3.5V12h8.5A8.5 8.5 0 0 0 12 3.5Z" />
+      <path d="M20.1 15A8.5 8.5 0 1 1 9 3.9" />
+    </svg>
+  );
+}
+
+export function IconDroplet(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M12 3.5S5.5 10.7 5.5 15a6.5 6.5 0 0 0 13 0c0-4.3-6.5-11.5-6.5-11.5Z" />
+    </svg>
+  );
+}
+
+export function IconStopwatch(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <circle cx="12" cy="13.5" r="7.5" />
+      <path d="M12 13.5 15 11" />
+      <path d="M10 2h4" />
+      <path d="M12 2v2.5" />
     </svg>
   );
 }

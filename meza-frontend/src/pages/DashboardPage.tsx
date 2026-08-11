@@ -2,10 +2,7 @@ import DashboardLayout from "../components/dashboard/DashboardLayout";
 import StatsRow from "../components/dashboard/StatsRow";
 import MealPlanCard from "../components/dashboard/MealPlanCard";
 import NutritionOverviewCard from "../components/dashboard/NutritionOverviewCard";
-import HydrationCard from "../components/dashboard/HydrationCard";
 import UpcomingMealsCard from "../components/dashboard/UpcomingMealsCard";
-import NutritionSummaryCard from "../components/dashboard/NutritionSummaryCard";
-import DailyTipCard from "../components/dashboard/DailyTipCard";
 import RecentRecipesGrid from "../components/dashboard/RecentRecipesGrid";
 import BottomBanner from "../components/dashboard/BottomBanner";
 import {
@@ -28,18 +25,12 @@ export default function DashboardPage() {
 
         <StatsRow stats={STAT_CARDS} />
 
-        <div className="grid grid-cols-1 gap-5 xl:grid-cols-[1.6fr_1fr_1fr]">
+        <div className="grid grid-cols-1 gap-5 xl:grid-cols-[1.6fr_1fr]">
           <MealPlanCard week={DAY_MEAL_PLANS} />
 
           <div className="flex flex-col gap-5">
-            <NutritionOverviewCard overview={NUTRITION_OVERVIEW} />
-            <HydrationCard hydration={HYDRATION_GOAL} />
-          </div>
-
-          <div className="flex flex-col gap-5">
+            <NutritionOverviewCard overview={NUTRITION_OVERVIEW} hydration={HYDRATION_GOAL} />
             <UpcomingMealsCard meals={UPCOMING_MEALS} />
-            <NutritionSummaryCard overview={NUTRITION_OVERVIEW} />
-            <DailyTipCard tip="Plan your meals ahead to save time and make healthier choices." />
           </div>
         </div>
 

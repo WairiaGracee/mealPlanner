@@ -1,13 +1,17 @@
-import type { NutritionOverview } from "../../types";
+import type { HydrationGoal, NutritionOverview } from "../../types";
+import { IconActivity, IconDroplet, IconFlame } from "./icons";
 
 interface NutritionOverviewCardProps {
   overview: NutritionOverview;
+  hydration: HydrationGoal;
 }
 
-export default function NutritionOverviewCard({ overview }: NutritionOverviewCardProps) {
-  const { avgCalories, targetCalories, macros } = overview;
+export default function NutritionOverviewCard({
+  overview,
+  hydration,
+}: NutritionOverviewCardProps) {
+  const { avgCalories, targetCalories, macros, activeMinutes } = overview;
 
-  // Build conic-gradient stops proportional to each macro's kcal contribution.
   const kcalPerGram: Record<string, number> = { Protein: 4, Carbs: 4, Fat: 9 };
   const kcalParts = macros.map((m) => m.value * (kcalPerGram[m.label] ?? 4));
   const totalKcalParts = kcalParts.reduce((a, b) => a + b, 0) || 1;
@@ -31,40 +35,62 @@ export default function NutritionOverviewCard({ overview }: NutritionOverviewCar
         </span>
       </div>
 
-      <div className="mt-5 flex items-center justify-center">
+      <div className="mt-5 flex items-center gap-5">
         <div
-          className="relative flex h-40 w-40 items-center justify-center rounded-full"
+          className="relative flex h-32 w-32 flex-shrink-0 items-center justify-center rounded-full"
           style={{ background: gradient }}
         >
-          <div className="flex h-28 w-28 flex-col items-center justify-center rounded-full bg-paper text-center">
-            <span className="font-display text-2xl text-ink">
+          <div
+            className="flex flex-col items-center justify-center rounded-full bg-paper text-center"
+            style={{ height: "5.25rem", width: "5.25rem" }}
+          >
+            <span className="font-display text-xl text-ink">
               {avgCalories.toLocaleString()}
             </span>
-            <span className="text-[11px] text-inkMuted">kcal / day</span>
+            <span className="text-[10px] text-inkMuted">kcal / day</span>
           </div>
         </div>
-      </div>
-      <p className="mt-1 text-center text-xs text-inkMuted">
-        Target {targetCalories.toLocaleString()} kcal
-      </p>
 
-      <div className="mt-5 flex flex-col gap-3">
-        {macros.map((m) => (
-          <div key={m.label} className="flex items-center justify-between text-sm">
-            <span className="flex items-center gap-2 text-ink">
-              <span
-                className="h-2.5 w-2.5 rounded-full"
-                style={{ backgroundColor: m.colorVar }}
-              />
-              {m.label}
-            </span>
-            <span className="text-inkMuted">
-              {m.value}
-              {m.unit} / {m.target}
-              {m.unit}
-            </span>
-          </div>
-        ))}
+        <div className="flex flex-1 flex-col gap-2.5">
+          {macros.map((m) => (
+            <div key={m.label} className="flex items-center justify-between text-sm">
+              <span className="flex items-center gap-2 text-ink">
+                <span
+                  className="h-2.5 w-2.5 rounded-full"
+                  style={{ backgroundColor: m.colorVar }}
+                />
+                {m.label}
+              </span>
+              <span className="text-inkMuted">
+                {m.value}
+                {m.unit} / {m.target}
+                {m.unit}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="mt-6 grid grid-cols-3 divide-x divide-line border-t border-line pt-4">
+        <div className="flex flex-col items-center gap-1 px-2 text-center">
+          <IconFlame className="h-4 w-4 text-forest" />
+          <span className="text-sm font-medium text-ink">
+            {targetCalories.toLocaleString()} kcal
+          </span>
+          <span className="text-[11px] text-inkMuted">Target</span>
+        </div>
+        <div className="flex flex-col items-center gap-1 px-2 text-center">
+          <IconActivity className="h-4 w-4 text-forest" />
+          <span className="text-sm font-medium text-ink">{activeMinutes ?? 0} min</span>
+          <span className="text-[11px] text-inkMuted">Active</span>
+        </div>
+        <div className="flex flex-col items-center gap-1 px-2 text-center">
+          <IconDroplet className="h-4 w-4 text-forest" />
+          <span className="text-sm font-medium text-ink">
+            {hydration.current} / {hydration.target} cups
+          </span>
+          <span className="text-[11px] text-inkMuted">Hydration</span>
+        </div>
       </div>
     </div>
   );

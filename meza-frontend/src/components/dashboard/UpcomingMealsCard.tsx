@@ -1,4 +1,5 @@
 import type { UpcomingMeal } from "../../types";
+import { IconChevronRight } from "./icons";
 
 interface UpcomingMealsCardProps {
   meals: UpcomingMeal[];
@@ -16,16 +17,22 @@ export default function UpcomingMealsCard({ meals }: UpcomingMealsCardProps) {
 
       <div className="mt-4 flex flex-col gap-3">
         {meals.map((meal) => (
-          <div key={`${meal.day}-${meal.slot}`} className="flex items-center gap-3">
-            <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl bg-forest-light text-xl">
-              {meal.image ? (
+          <div
+            key={`${meal.day}-${meal.slot}`}
+            className="flex items-center gap-3 rounded-xl border border-line p-2.5 transition-colors hover:bg-forest-light/40"
+          >
+            <div className="relative flex h-14 w-14 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl bg-forest-light text-xl">
+              <span aria-hidden="true">{meal.emoji}</span>
+              {meal.image && (
                 <img
                   src={meal.image}
                   alt={meal.name}
-                  className="h-full w-full object-cover"
+                  loading="lazy"
+                  className="absolute inset-0 h-full w-full object-cover"
+                  onError={(e) => {
+                    (e.currentTarget as HTMLImageElement).style.display = "none";
+                  }}
                 />
-              ) : (
-                meal.emoji
               )}
             </div>
             <div className="flex-1">
@@ -34,19 +41,10 @@ export default function UpcomingMealsCard({ meals }: UpcomingMealsCardProps) {
                 {meal.day} · {meal.slot}
               </p>
             </div>
-            <button
-              aria-label="Save meal"
-              className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-inkMuted transition-colors hover:bg-forest-light hover:text-forest"
-            >
-              🔖
-            </button>
+            <IconChevronRight className="h-4 w-4 flex-shrink-0 text-inkMuted" />
           </div>
         ))}
       </div>
-
-      <button className="mt-5 w-full rounded-full bg-forest py-2.5 text-sm font-medium text-offwhite transition-colors hover:bg-forest-deep">
-        Go to meal planner
-      </button>
     </div>
   );
 }

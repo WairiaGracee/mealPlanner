@@ -18,14 +18,17 @@ export default function RecentRecipesGrid({ recipes }: RecentRecipesGridProps) {
         {recipes.map((recipe) => (
           <div key={recipe.name} className="group">
             <div className="relative flex h-28 items-center justify-center overflow-hidden rounded-xl bg-forest-light text-4xl sm:h-32">
-              {recipe.image ? (
+              <span aria-hidden="true">{recipe.emoji}</span>
+              {recipe.image && (
                 <img
                   src={recipe.image}
                   alt={recipe.name}
-                  className="h-full w-full object-cover"
+                  loading="lazy"
+                  className="absolute inset-0 h-full w-full object-cover"
+                  onError={(e) => {
+                    (e.currentTarget as HTMLImageElement).style.display = "none";
+                  }}
                 />
-              ) : (
-                recipe.emoji
               )}
               <button
                 aria-label="Save recipe"
