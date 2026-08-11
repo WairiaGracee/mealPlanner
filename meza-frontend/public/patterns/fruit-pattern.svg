@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="440" height="440" viewBox="0 0 440 440">
+  <!-- Apple -->
+  <g transform="translate(40,40) rotate(-8)" fill="#2F4B33" opacity="0.055">
+    <path d="M30 16 C24 9 13 11 11 20 C9 31 18 44 30 51 C42 44 51 31 49 20 C47 11 36 9 30 16 Z"/>
+    <path d="M30 13 L30 4" stroke="#2F4B33" stroke-width="2" fill="none"/>
+    <path d="M30 7 C35 2 42 5 39 10 C36 14 30 12 30 7 Z"/>
+  </g>
+
+  <!-- Orange slice -->
+  <g transform="translate(220,60) rotate(4)" fill="#C79A56" opacity="0.06">
+    <circle cx="30" cy="30" r="19"/>
+    <g stroke="#FAF6EE" stroke-width="1.6" opacity="0.9">
+      <line x1="30" y1="30" x2="30" y2="11"/>
+      <line x1="30" y1="30" x2="46" y2="20"/>
+      <line x1="30" y1="30" x2="46" y2="40"/>
+      <line x1="30" y1="30" x2="30" y2="49"/>
+      <line x1="30" y1="30" x2="14" y2="40"/>
+      <line x1="30" y1="30" x2="14" y2="20"/>
+    </g>
+  </g>
+
+  <!-- Banana -->
+  <g transform="translate(330,150) rotate(18)" fill="#2F4B33" opacity="0.05">
+    <path d="M6 46 C10 24 30 10 48 13 C46 18 41 20 36 24 C23 31 14 40 12 52 C9 51 7 49 6 46 Z"/>
+  </g>
+
+  <!-- Grape cluster -->
+  <g transform="translate(90,180)" fill="#B65B3D" opacity="0.05">
+    <circle cx="14" cy="10" r="6"/>
+    <circle cx="24" cy="10" r="6"/>
+    <circle cx="9" cy="20" r="6"/>
+    <circle cx="19" cy="20" r="6"/>
+    <circle cx="29" cy="20" r="6"/>
+    <circle cx="14" cy="30" r="6"/>
+    <circle cx="24" cy="30" r="6"/>
+    <path d="M19 4 L19 -4" stroke="#B65B3D" stroke-width="2" fill="none"/>
+  </g>
+
+  <!-- Leaf -->
+  <g transform="translate(230,230) rotate(-20)" fill="#2F4B33" opacity="0.06">
+    <path d="M4 40 C4 15 18 3 42 1 C40 24 26 37 4 40 Z"/>
+  </g>
+
+  <!-- Avocado -->
+  <g transform="translate(30,290) rotate(6)" fill="#2F4B33" opacity="0.05">
+    <ellipse cx="26" cy="30" rx="20" ry="26"/>
+    <circle cx="26" cy="32" r="10" fill="#FAF6EE"/>
+  </g>
+
+  <!-- Small apple (repeat, offset) -->
+  <g transform="translate(300,330) rotate(12) scale(0.75)" fill="#C79A56" opacity="0.06">
+    <path d="M30 16 C24 9 13 11 11 20 C9 31 18 44 30 51 C42 44 51 31 49 20 C47 11 36 9 30 16 Z"/>
+  </g>
+
+  <!-- Second orange slice, smaller -->
+  <g transform="translate(150,340) rotate(-10) scale(0.6)" fill="#2F4B33" opacity="0.055">
+    <circle cx="30" cy="30" r="19"/>
+    <g stroke="#FAF6EE" stroke-width="1.6" opacity="0.9">
+      <line x1="30" y1="30" x2="30" y2="11"/>
+      <line x1="30" y1="30" x2="46" y2="20"/>
+      <line x1="30" y1="30" x2="46" y2="40"/>
+      <line x1="30" y1="30" x2="30" y2="49"/>
+      <line x1="30" y1="30" x2="14" y2="40"/>
+      <line x1="30" y1="30" x2="14" y2="20"/>
+    </g>
+  </g>
+</svg>

@@ -36,4 +36,31 @@
   .eyebrow {
     @apply font-mono text-xs tracking-[0.2em] uppercase text-forest;
   }
+
+  /* Scrollbar stays invisible until the container is hovered. */
+  .scroll-on-hover {
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+  }
+
+  .scroll-on-hover::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .scroll-on-hover::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scroll-on-hover::-webkit-scrollbar-thumb {
+    background-color: transparent;
+    border-radius: 9999px;
+  }
+
+  .scroll-on-hover:hover {
+    scrollbar-color: theme("colors.line") transparent;
+  }
+
+  .scroll-on-hover:hover::-webkit-scrollbar-thumb {
+    background-color: theme("colors.line");
+  }
 }

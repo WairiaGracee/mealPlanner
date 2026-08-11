@@ -33,13 +33,13 @@ module.exports = {
       },
       backgroundImage: {
         grain: "radial-gradient(circle at 1px 1px, rgba(239,232,218,0.06) 1px, transparent 0)",
+        "fruit-pattern": "url('/patterns/fruit-pattern.svg')",
       },
       backgroundSize: {
         grain: "18px 18px",
+        "fruit-pattern": "280px 280px",
       },
     },
   },
   plugins: [],
 }
-
-
