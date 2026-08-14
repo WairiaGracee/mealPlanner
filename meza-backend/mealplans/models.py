@@ -18,11 +18,8 @@ class Recipe(models.Model):
     prep_minutes = models.PositiveSmallIntegerField(null=True, blank=True)
     image_url = models.URLField(blank=True)
 
-    # [{ "name": "Sukuma wiki", "quantity": "1", "unit": "bunch" }, ...]
     ingredients = models.JSONField(default=list, blank=True)
-    # ["Wash and chop the greens.", "Heat oil in a pan...", ...]
     steps = models.JSONField(default=list, blank=True)
-    # Dietary/health tags this recipe suits, e.g. ["vegetarian", "low_sodium"]
     tags = models.JSONField(default=list, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -34,12 +31,23 @@ class Recipe(models.Model):
 class MealPlan(models.Model):
     """One user's plan for a given week."""
 
+    class Status(models.TextChoices):
+        PENDING = "pending", "Pending"
+        GENERATING = "generating", "Generating"
+        READY = "ready", "Ready"
+        FAILED = "failed", "Failed"
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="meal_plans"
     )
     week_start_date = models.DateField()
     is_active = models.BooleanField(default=True)
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
+    error_message = models.TextField(blank=True)
+    # The exact prompt sent to Gemini for this plan — kept for debugging
+    # and for tuning the prompt-building logic against real onboarding data.
+    prompt = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -82,8 +90,7 @@ class PlannedMeal(models.Model):
 
 
 class GroceryListItem(models.Model):
-    """Auto-compiled from a MealPlan's recipes, grouped by category —
-    mirrors the categorized shopping list shown on the dashboard."""
+    """Auto-compiled from a MealPlan's recipes, grouped by category."""
 
     class Category(models.TextChoices):
         PROTEINS = "proteins", "Proteins"

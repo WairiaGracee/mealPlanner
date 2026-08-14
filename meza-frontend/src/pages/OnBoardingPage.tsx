@@ -16,6 +16,8 @@ import {
   type Allergy,
   type OnboardingData,
 } from "../types";
+import { submitOnboardingProfile, generateMealPlan } from "../lib/mealplans";
+import { ApiError } from "../lib/api";
 
 const TOTAL_STEPS = 7;
 
@@ -23,6 +25,8 @@ export default function OnboardingPage() {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [data, setData] = useState<OnboardingData>(EMPTY_ONBOARDING_DATA);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
 
   function update<K extends keyof OnboardingData>(key: K, value: OnboardingData[K]) {
     setData((prev) => ({ ...prev, [key]: value }));
@@ -59,7 +63,7 @@ export default function OnboardingPage() {
       case 6:
         return data.budget !== null;
       case 7:
-        return true; // height/weight are optional
+        return true;
       default:
         return false;
     }
@@ -73,14 +77,28 @@ export default function OnboardingPage() {
     setStep((s) => s - 1);
   }
 
-  function handleContinue() {
+  async function handleContinue() {
     if (!canContinue) return;
+
     if (step === TOTAL_STEPS) {
-      // TODO: replace with a real POST /api/onboarding/ call once the
-      // Django backend exists. `data` holds everything collected here.
-      navigate("/dashboard");
+      setError("");
+      setSubmitting(true);
+      try {
+        await submitOnboardingProfile(data);
+        const plan = await generateMealPlan();
+        navigate(`/generating/${plan.id}`);
+      } catch (err) {
+        setError(
+          err instanceof ApiError
+            ? err.message || "Couldn't start building your plan."
+            : "Something went wrong. Please try again."
+        );
+      } finally {
+        setSubmitting(false);
+      }
       return;
     }
+
     setStep((s) => s + 1);
   }
 
@@ -244,6 +262,8 @@ export default function OnboardingPage() {
           )}
         </div>
 
+        {error && <p className="mt-6 text-sm text-clay">{error}</p>}
+
         <div className="mt-10 flex items-center justify-between gap-4">
           <button
             onClick={handleBack}
@@ -253,10 +273,14 @@ export default function OnboardingPage() {
           </button>
           <button
             onClick={handleContinue}
-            disabled={!canContinue}
+            disabled={!canContinue || submitting}
             className="inline-flex items-center justify-center gap-2 rounded-full bg-forest px-8 py-3 text-sm font-medium tracking-wide text-offwhite transition-colors duration-200 hover:bg-forest-deep disabled:cursor-not-allowed disabled:bg-line disabled:text-inkMuted"
           >
-            {step === TOTAL_STEPS ? "Build my plan" : "Continue"}
+            {submitting
+              ? "Starting…"
+              : step === TOTAL_STEPS
+                ? "Build my plan"
+                : "Continue"}
           </button>
         </div>
       </main>

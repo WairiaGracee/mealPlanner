@@ -24,7 +24,20 @@ class RegisterSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
+    # False for brand-new users (no Profile row yet) and for anyone who
+    # hasn't finished/skipped the onboarding wizard. Lets the frontend
+    # decide login/dashboard redirects without a second API call.
+    onboarding_completed = serializers.SerializerMethodField()
+
     class Meta:
         model = User
-        fields = ["id", "email", "full_name", "auth_provider", "date_joined"]
+        fields = ["id", "email", "full_name", "auth_provider", "date_joined", "onboarding_completed"]
         read_only_fields = fields
+
+    def get_onboarding_completed(self, obj):
+        profile = getattr(obj, "profile", None)
+        return bool(profile and profile.onboarding_completed)
+
+
+class GoogleAuthSerializer(serializers.Serializer):
+    id_token = serializers.CharField()

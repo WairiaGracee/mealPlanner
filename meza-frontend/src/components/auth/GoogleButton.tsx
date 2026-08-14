@@ -1,27 +1,85 @@
+import { useEffect, useRef } from "react";
+import { useAuth } from "../../context/authContext";
+
 interface GoogleButtonProps {
   label?: string;
+  onError?: (message: string) => void;
+  onSuccess?: () => void;
 }
+
+declare global {
+  interface Window {
+    google?: any;
+  }
+}
+
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined;
 
 export default function GoogleButton({
   label = "Continue with Google",
+  onError,
+  onSuccess,
 }: GoogleButtonProps) {
-  return (
-    <button
-      type="button"
-      onClick={() => {
-        // TODO: wire to the Django Google OAuth flow (e.g. django-allauth,
-        // or a custom /api/auth/google/ endpoint) once the backend exists.
-        console.log("Google OAuth not yet connected");
-      }}
-      className="flex w-full items-center justify-center gap-3 rounded-full border border-line bg-white px-6 py-3 text-sm font-medium text-ink transition-colors hover:bg-forest-light focus-visible:outline focus-visible:outline-2 focus-visible:outline-forest"
-    >
-      <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
-        <path fill="#4285F4" d="M17.64 9.2045c0-.6381-.0573-1.2518-.1636-1.8409H9v3.4814h4.8436c-.2086 1.125-.8427 2.0782-1.7959 2.7164v2.2582h2.9087c1.7018-1.5668 2.6836-3.8745 2.6836-6.6151z" />
-        <path fill="#34A853" d="M9 18c2.43 0 4.4673-.8064 5.9564-2.1818l-2.9087-2.2582c-.8064.54-1.8368.8591-3.0477.8591-2.3436 0-4.3282-1.5831-5.036-3.7104H.9573v2.3318C2.4382 15.9832 5.4818 18 9 18z" />
-        <path fill="#FBBC05" d="M3.964 10.71c-.18-.54-.2827-1.1168-.2827-1.71s.1027-1.17.2827-1.71V4.9582H.9573C.3477 6.1732 0 7.5477 0 9s.3477 2.8268.9573 4.0418L3.964 10.71z" />
-        <path fill="#EA4335" d="M9 3.5795c1.3214 0 2.5077.4541 3.4405 1.346l2.5813-2.5814C13.4632.8918 11.4259 0 9 0 5.4818 0 2.4382 2.0168.9573 4.9582L3.964 7.29C4.6718 5.1627 6.6564 3.5795 9 3.5795z" />
-      </svg>
-      {label}
-    </button>
-  );
+  const { loginWithGoogle } = useAuth();
+  const buttonRef = useRef<HTMLDivElement>(null);
+
+  // loginWithGoogle/onError/onSuccess are likely new references on every
+  // render (context value, inline prop), so we read them via refs inside
+  // the callback instead of listing them as effect deps — otherwise GSI's
+  // initialize() gets called again on every render (see the "initialize()
+  // is called multiple times" console warning this was producing).
+  const loginWithGoogleRef = useRef(loginWithGoogle);
+  const onErrorRef = useRef(onError);
+  const onSuccessRef = useRef(onSuccess);
+  useEffect(() => {
+    loginWithGoogleRef.current = loginWithGoogle;
+    onErrorRef.current = onError;
+    onSuccessRef.current = onSuccess;
+  }, [loginWithGoogle, onError, onSuccess]);
+
+  // Guards against React.StrictMode's dev-only double-invoke of effects
+  // (mount → cleanup → mount, same component instance, same ref) calling
+  // initialize() twice. This is per-instance rather than module-level so
+  // GoogleButton still works correctly when both LoginPage and
+  // RegisterPage mount their own instance with their own callbacks.
+  const initializedRef = useRef(false);
+
+  useEffect(() => {
+    if (!GOOGLE_CLIENT_ID || !window.google || !buttonRef.current) return;
+    if (initializedRef.current) return;
+    initializedRef.current = true;
+
+    window.google.accounts.id.initialize({
+      client_id: GOOGLE_CLIENT_ID,
+      callback: async (response: { credential: string }) => {
+        try {
+          await loginWithGoogleRef.current(response.credential);
+          onSuccessRef.current?.();
+        } catch {
+          onErrorRef.current?.("Google sign-in failed. Please try again.");
+        }
+      },
+    });
+
+    window.google.accounts.id.renderButton(buttonRef.current, {
+      type: "standard",
+      theme: "outline",
+      size: "large",
+      shape: "pill",
+      width: buttonRef.current.offsetWidth || 320,
+      text: label.toLowerCase().startsWith("sign up") ? "signup_with" : "signin_with",
+    });
+    // Intentionally run once per mount + label change — see comment above.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [label]);
+
+  if (!GOOGLE_CLIENT_ID) {
+    return (
+      <p className="rounded-full border border-line bg-white px-6 py-3 text-center text-xs text-inkMuted">
+        Google sign-in isn&rsquo;t configured yet.
+      </p>
+    );
+  }
+
+  return <div ref={buttonRef} className="flex w-full justify-center" />;
 }

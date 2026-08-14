@@ -4,16 +4,19 @@ import AuthLayout from "../components/auth/AuthLayout";
 import GoogleButton from "../components/auth/GoogleButton";
 import TextField from "../components/ui/TextField";
 import Button from "../components/ui/Button";
+import { useAuth, ApiError } from "../context/authContext";
 
 export default function RegisterPage() {
   const navigate = useNavigate();
+  const { register } = useAuth();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
-  function handleSubmit(e: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
     if (password !== confirmPassword) {
@@ -22,10 +25,19 @@ export default function RegisterPage() {
     }
 
     setError("");
-    // TODO: replace with a real POST /api/auth/register/ call once the
-    // Django backend exists. The next step in the flow is onboarding,
-    // where we collect height, weight, goals, and health info.
-    navigate("/onboarding");
+    setSubmitting(true);
+    try {
+      await register({ fullName, email, password });
+      navigate("/onboarding");
+    } catch (err) {
+      setError(
+        err instanceof ApiError
+          ? err.message || "Couldn't create your account."
+          : "Something went wrong. Please try again."
+      );
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -41,7 +53,7 @@ export default function RegisterPage() {
         </>
       }
     >
-      <GoogleButton label="Sign up with Google" />
+      <GoogleButton label="Sign up with Google" onError={setError} onSuccess={() => navigate("/onboarding")} />
 
       <div className="my-6 flex items-center gap-3 font-mono text-xs uppercase tracking-wide text-muted">
         <span className="h-px flex-1 bg-line" />
@@ -89,8 +101,8 @@ export default function RegisterPage() {
 
         {error && <p className="text-sm text-clay">{error}</p>}
 
-        <Button type="submit" variant="primary" className="mt-2 justify-center">
-          Create account
+        <Button type="submit" variant="primary" className="mt-2 justify-center" disabled={submitting}>
+          {submitting ? "Creating account…" : "Create account"}
         </Button>
       </form>
     </AuthLayout>

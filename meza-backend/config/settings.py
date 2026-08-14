@@ -112,10 +112,13 @@ STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # --- REST framework / JWT ---
+# Auth is read from an httpOnly cookie (see accounts/authentication.py)
+# rather than the Authorization header, so the frontend JS never touches
+# the token directly.
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "accounts.authentication.CookieJWTAuthentication",
     ),
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
 }
@@ -126,11 +129,30 @@ SIMPLE_JWT = {
     "ROTATE_REFRESH_TOKENS": True,
 }
 
+# --- Auth cookies ---
+
+AUTH_COOKIE_ACCESS = "access_token"
+AUTH_COOKIE_REFRESH = "refresh_token"
+AUTH_COOKIE_ACCESS_MAX_AGE = int(SIMPLE_JWT["ACCESS_TOKEN_LIFETIME"].total_seconds())
+AUTH_COOKIE_REFRESH_MAX_AGE = int(SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"].total_seconds())
+# Must be True in production (HTTPS) — off by default locally since
+# localhost is plain HTTP and browsers drop Secure cookies over HTTP.
+AUTH_COOKIE_SECURE = config("AUTH_COOKIE_SECURE", default=not DEBUG, cast=bool)
+AUTH_COOKIE_SAMESITE = "Lax"
+
 # --- CORS ---
-# The Vite dev server runs on :5173 by default.
+# The Vite dev server runs on :5173 by default. CORS_ALLOW_CREDENTIALS
+# is required so the browser will send/receive the auth cookies on
+# cross-origin requests (frontend on :5173, API on :8000).
 
 CORS_ALLOWED_ORIGINS = config(
     "CORS_ALLOWED_ORIGINS",
     default="http://localhost:5173,http://127.0.0.1:5173",
     cast=Csv(),
 )
+CORS_ALLOW_CREDENTIALS = True
+
+# --- Google Sign-In ---
+
+GOOGLE_CLIENT_ID = config("GOOGLE_CLIENT_ID", default="")
+GEMINI_API_KEY = config("GEMINI_API_KEY", default="")
