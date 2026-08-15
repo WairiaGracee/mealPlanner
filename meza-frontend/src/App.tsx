@@ -9,6 +9,10 @@ import RegisterPage from "./pages/RegisterPage";
 import OnboardingPage from "./pages/OnBoardingPage";
 import GeneratingPage from "./pages/GeneratingPage";
 import DashboardPage from "./pages/DashboardPage";
+import MealPlannerPage from "./pages/MealPlannerPage";
+import RecipesPage from "./pages/RecipesPage";
+import GroceryListPage from "./pages/GroceryListPage";
+import NutritionPage from "./pages/NutritionPage";
 
 function App() {
   return (
@@ -41,6 +45,38 @@ function App() {
             element={
               <ProtectedRoute>
                 <DashboardPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/plan"
+            element={
+              <ProtectedRoute>
+                <MealPlannerPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/recipes"
+            element={
+              <ProtectedRoute>
+                <RecipesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/shopping-list"
+            element={
+              <ProtectedRoute>
+                <GroceryListPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/nutrition"
+            element={
+              <ProtectedRoute>
+                <NutritionPage />
               </ProtectedRoute>
             }
           />

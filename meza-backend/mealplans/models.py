@@ -5,18 +5,18 @@ from django.db import models
 
 
 class Recipe(models.Model):
-    """A single Kenyan dish — the backend counterpart to the frontend's
-    MealPlanPreview/DishFeature mock data. AI-generated or hand-authored
-    recipes will both live here."""
-
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=150)
     region = models.CharField(max_length=100, blank=True)
     description = models.TextField(blank=True)
 
     calories = models.PositiveSmallIntegerField(null=True, blank=True)
+    protein_g = models.FloatField(null=True, blank=True)
+    carbs_g = models.FloatField(null=True, blank=True)
+    fat_g = models.FloatField(null=True, blank=True)
     prep_minutes = models.PositiveSmallIntegerField(null=True, blank=True)
     image_url = models.URLField(blank=True)
+    emoji = models.CharField(max_length=8, blank=True)
 
     ingredients = models.JSONField(default=list, blank=True)
     steps = models.JSONField(default=list, blank=True)
@@ -26,8 +26,6 @@ class Recipe(models.Model):
 
     def __str__(self):
         return self.name
-
-
 class MealPlan(models.Model):
     """One user's plan for a given week."""
 
@@ -45,8 +43,6 @@ class MealPlan(models.Model):
     is_active = models.BooleanField(default=True)
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
     error_message = models.TextField(blank=True)
-    # The exact prompt sent to Gemini for this plan — kept for debugging
-    # and for tuning the prompt-building logic against real onboarding data.
     prompt = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -77,7 +73,10 @@ class PlannedMeal(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     meal_plan = models.ForeignKey(MealPlan, on_delete=models.CASCADE, related_name="meals")
-    recipe = models.ForeignKey(Recipe, on_delete=models.PROTECT, related_name="+")
+    # related_name changed from "+" to "planned_meals" — "+" disables the
+    # reverse lookup entirely, which blocked querying "every recipe this
+    # user has ever been given" (needed for the Recipes list below).
+    recipe = models.ForeignKey(Recipe, on_delete=models.PROTECT, related_name="planned_meals")
     day_of_week = models.IntegerField(choices=DayOfWeek.choices)
     meal_type = models.CharField(max_length=20, choices=MealType.choices)
 
@@ -114,3 +113,4 @@ class GroceryListItem(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.quantity})"
+

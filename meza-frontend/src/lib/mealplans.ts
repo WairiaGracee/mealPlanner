@@ -9,6 +9,50 @@ export interface MealPlanStatus {
   week_start_date: string;
 }
 
+export interface Recipe {
+  id: string;
+  name: string;
+  region: string;
+  description: string;
+  calories: number | null;
+  protein_g: number | null;
+  carbs_g: number | null;
+  fat_g: number | null;
+  prep_minutes: number | null;
+  image_url: string;
+  emoji: string;
+  ingredients: { name: string; quantity: string; unit?: string }[];
+  steps: string[];
+  tags: string[];
+}
+
+export interface PlannedMeal {
+  id: string;
+  day_of_week: number;
+  day_of_week_display: string;
+  meal_type: "breakfast" | "lunch" | "dinner" | "snack";
+  recipe: Recipe;
+}
+
+export interface GroceryListItem {
+  id: string;
+  name: string;
+  quantity: string;
+  category: string;
+  is_checked: boolean;
+}
+
+export interface MealPlanDetail {
+  id: string;
+  status: MealPlanStatus["status"];
+  week_start_date: string;
+  is_active: boolean;
+  prompt: string;
+  meals: PlannedMeal[];
+  grocery_items: GroceryListItem[];
+  created_at: string;
+}
+
 function toKg(weight: string, unit: "kg" | "lb"): number | null {
   const n = parseFloat(weight);
   if (isNaN(n)) return null;
@@ -41,4 +85,21 @@ export function generateMealPlan() {
 
 export function getMealPlanStatus(id: string) {
   return api.get<MealPlanStatus>(`/mealplans/${id}/status/`);
+}
+
+export function getMealPlanDetail(id: string) {
+  return api.get<MealPlanDetail>(`/mealplans/${id}/`);
+}
+
+export function getRecipes() {
+  return api.get<Recipe[]>("/mealplans/recipes/");
+}
+
+export function getActiveMealPlan() {
+  return api.get<MealPlanDetail>("/mealplans/active/");
+}
+export function toggleGroceryItem(id: string, isChecked: boolean) {
+  return api.patch<GroceryListItem>(`/mealplans/grocery-items/${id}/`, {
+    is_checked: isChecked,
+  });
 }

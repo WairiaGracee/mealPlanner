@@ -7,8 +7,13 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .ai import generate_meal_plan_sync
-from .models import MealPlan
-from .serializers import MealPlanDetailSerializer, MealPlanStatusSerializer
+from .models import GroceryListItem, MealPlan, Recipe
+from .serializers import (
+    GroceryListItemSerializer,
+    MealPlanDetailSerializer,
+    MealPlanStatusSerializer,
+    RecipeSerializer,
+)
 
 
 def _monday_of_this_week():
@@ -52,8 +57,7 @@ class MealPlanStatusView(APIView):
 
 
 class MealPlanDetailView(APIView):
-    """GET /api/mealplans/<id>/ — full plan with meals + grocery list,
-    once status is "ready"."""
+    """GET /api/mealplans/<id>/ — full plan with meals + grocery list."""
 
     permission_classes = [permissions.IsAuthenticated]
 
@@ -67,17 +71,48 @@ class MealPlanDetailView(APIView):
 
 
 class ActiveMealPlanView(APIView):
-    """GET /api/mealplans/active/ — convenience lookup for the dashboard:
-    the user's current active plan, whatever its status."""
+    """GET /api/mealplans/active/ — the user's current active plan with
+    full meal + grocery detail, or 404 if none exists yet."""
 
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
         meal_plan = (
             MealPlan.objects.filter(user=request.user, is_active=True)
+            .prefetch_related("meals__recipe", "grocery_items")
             .order_by("-created_at")
             .first()
         )
         if meal_plan is None:
             return Response({"detail": "No meal plan yet."}, status=404)
-        return Response(MealPlanStatusSerializer(meal_plan).data)
+        return Response(MealPlanDetailSerializer(meal_plan).data)
+
+
+class GroceryItemUpdateView(APIView):
+    """PATCH /api/mealplans/grocery-items/<id>/ — toggle a single item's
+    checked state, e.g. from a grocery-list checklist UI."""
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def patch(self, request, pk):
+        item = get_object_or_404(GroceryListItem, pk=pk, meal_plan__user=request.user)
+        is_checked = request.data.get("is_checked")
+        if is_checked is not None:
+            item.is_checked = bool(is_checked)
+            item.save(update_fields=["is_checked"])
+        return Response(GroceryListItemSerializer(item).data)
+
+
+class RecipeListView(APIView):
+    """GET /api/mealplans/recipes/ — every distinct recipe that has
+    appeared in any of the user's generated meal plans, most recent first."""
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        recipes = (
+            Recipe.objects.filter(planned_meals__meal_plan__user=request.user)
+            .distinct()
+            .order_by("-created_at")
+        )
+        return Response(RecipeSerializer(recipes, many=True).data)
