@@ -33,9 +33,11 @@ export default function OptionCard({
         {icon}
       </span>
       <span className="flex-1">
-        <span className="block font-medium text-ink">{label}</span>
+        <span className="block font-robotoCondensed text-base font-medium text-ink">
+          {label}
+        </span>
         {description && (
-          <span className="mt-0.5 block text-sm text-inkMuted">
+          <span className="mt-0.5 block text-sm text-inkMuted font-robotoCondensed">
             {description}
           </span>
         )}
