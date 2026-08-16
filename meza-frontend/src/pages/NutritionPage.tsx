@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "../components/dashboard/DashboardLayout";
+import { IconFlame, IconLeaf, IconTarget } from "../components/dashboard/icons";
 import { useAuth } from "../context/authContext";
 import { getActiveMealPlan, type MealPlanDetail } from "../lib/mealplans";
 import { ApiError } from "../lib/api";
@@ -97,14 +98,45 @@ export default function NutritionPage() {
   return (
     <DashboardLayout userName={userName}>
       <div className="mx-auto flex max-w-3xl flex-col gap-6 pt-6 sm:pt-8">
-        <h1 className="font-display text-3xl text-ink">Nutrition</h1>
+        {/* Header */}
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+          <div>
+            <h1 className="font-display text-3xl text-ink">Nutrition</h1>
+            <p className="mt-1 text-sm text-inkMuted">
+              A daily breakdown of calories and macros from your meal plan.
+            </p>
+            <div className="mt-2 h-[3px] w-14 rounded-full bg-clay" />
+          </div>
 
-        <div className="flex gap-2 overflow-x-auto pb-1">
+          <div className="flex flex-wrap items-stretch gap-3">
+            <div className="flex items-center divide-x divide-line rounded-2xl border border-line bg-paper px-5 py-3">
+              <div className="pr-5 text-center">
+                <p className="font-display text-xl text-ink">
+                  {hasMacroData ? Math.round(macros.kcal) : "—"}
+                </p>
+                <p className="flex items-center justify-center gap-1 text-[11px] text-inkMuted">
+                  <IconFlame className="h-3 w-3 text-clay" />
+                  Kcal this day
+                </p>
+              </div>
+              <div className="pl-5 text-center">
+                <p className="font-display text-xl text-ink">{dayMeals.length}</p>
+                <p className="flex items-center justify-center gap-1 text-[11px] text-inkMuted">
+                  <IconTarget className="h-3 w-3 text-forest" />
+                  Meals planned
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Day pill nav */}
+        <div className="flex items-center gap-1 overflow-x-auto rounded-full border border-line bg-paper px-2 py-1.5">
           {DAY_LABELS.map((label, i) => (
             <button
               key={label}
               onClick={() => setSelectedDay(i)}
-              className={`flex-shrink-0 rounded-xl px-4 py-2 text-sm font-medium transition-colors ${
+              className={`flex-shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
                 i === selectedDay
                   ? "bg-forest text-offwhite"
                   : "text-ink/80 hover:bg-forest-light"
@@ -143,12 +175,15 @@ export default function NutritionPage() {
         </div>
 
         <div className="rounded-2xl border border-line bg-paper p-5 sm:p-6">
-          <h2 className="font-display text-lg text-ink">Meals this day</h2>
+          <h2 className="flex items-center gap-2 font-display text-lg text-ink">
+            <IconLeaf className="h-4 w-4 text-forest" />
+            Meals this day
+          </h2>
           <div className="mt-4 flex flex-col gap-3">
             {dayMeals.map((meal) => (
               <div
                 key={meal.id}
-                className="flex items-center gap-4 rounded-xl border border-line p-3"
+                className="flex items-center gap-4 rounded-xl border border-line/70 p-3 transition-colors hover:bg-forest-light/30"
               >
                 <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-forest-light text-xl">
                   {meal.recipe.emoji || "🍽️"}

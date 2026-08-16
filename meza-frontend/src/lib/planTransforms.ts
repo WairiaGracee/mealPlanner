@@ -148,6 +148,17 @@ export function macrosForDay(detail: MealPlanDetail, dayOfWeek: number): DayMacr
     );
 }
 
+export function formatWeekRange(detail: MealPlanDetail): string {
+  const weekStart = parseWeekStart(detail.week_start_date);
+  const weekEnd = addDays(weekStart, 6);
+  const sameMonth = weekStart.getMonth() === weekEnd.getMonth();
+  const startStr = formatShortDate(weekStart);
+  const endStr = sameMonth
+    ? `${weekEnd.getDate()}`
+    : formatShortDate(weekEnd);
+  return `${startStr} – ${endStr}, ${weekEnd.getFullYear()}`;
+}
+
 export function getTodayDayOfWeek(detail: MealPlanDetail): number | null {
   const weekStart = parseWeekStart(detail.week_start_date);
   const today = new Date();

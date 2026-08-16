@@ -1,15 +1,22 @@
 import json
+import logging
 import time
 
+import requests
 from django.conf import settings
 from google import genai
 from google.genai.errors import ServerError
 
 from .models import GroceryListItem, MealPlan, PlannedMeal, Recipe
 
+logger = logging.getLogger(__name__)
+
 MODEL_NAME = "gemini-3.5-flash"
 MAX_RETRIES = 3
 RETRY_DELAY_SECONDS = 5
+
+PEXELS_SEARCH_URL = "https://api.pexels.com/v1/search"
+IMAGE_FETCH_TIMEOUT_SECONDS = 4
 
 RESPONSE_SCHEMA = {
     "type": "object",
@@ -174,10 +181,69 @@ def generate_meal_plan_sync(meal_plan: MealPlan) -> None:
         meal_plan.save(update_fields=["status", "error_message"])
 
 
+def _fetch_recipe_image_url(dish_name: str, region: str, image_cache: dict) -> str:
+    """
+    Look up a photo that matches the generated dish, via Pexels.
+
+    Order of preference:
+      1. An in-memory cache for this generation run (same dish appears twice).
+      2. A previously generated Recipe with the same name that already has
+         an image — avoids re-querying Pexels for common Kenyan staples
+         that show up across many users' plans.
+      3. A live Pexels search, scoped with "Kenyan food" so results match
+         the actual cuisine rather than a generic/Western interpretation
+         of the dish name.
+
+    Returns "" (never raises) if nothing is found or the API isn't
+    configured — the frontend already falls back to the dish emoji.
+    """
+    cache_key = dish_name.strip().lower()
+    if cache_key in image_cache:
+        return image_cache[cache_key]
+
+    existing = (
+        Recipe.objects.filter(name__iexact=dish_name)
+        .exclude(image_url="")
+        .order_by("-created_at")
+        .values_list("image_url", flat=True)
+        .first()
+    )
+    if existing:
+        image_cache[cache_key] = existing
+        return existing
+
+    if not settings.PEXELS_API_KEY:
+        image_cache[cache_key] = ""
+        return ""
+
+    query = f"{dish_name} {region} Kenyan food".strip()
+    try:
+        response = requests.get(
+            PEXELS_SEARCH_URL,
+            headers={"Authorization": settings.PEXELS_API_KEY},
+            params={"query": query, "per_page": 1, "orientation": "square"},
+            timeout=IMAGE_FETCH_TIMEOUT_SECONDS,
+        )
+        response.raise_for_status()
+        photos = response.json().get("photos", [])
+        image_url = photos[0]["src"]["medium"] if photos else ""
+    except (requests.RequestException, KeyError, ValueError) as exc:
+        logger.warning("Pexels image lookup failed for %r: %s", dish_name, exc)
+        image_url = ""
+
+    image_cache[cache_key] = image_url
+    return image_url
+
+
 def _save_generated_plan(meal_plan: MealPlan, payload: dict) -> None:
+    image_cache: dict = {}
+
     for day in payload.get("days", []):
         day_of_week = day["day_of_week"]
         for meal in day.get("meals", []):
+            image_url = _fetch_recipe_image_url(
+                meal["name"], meal.get("region", ""), image_cache
+            )
             recipe = Recipe.objects.create(
                 name=meal["name"],
                 region=meal.get("region", ""),
@@ -188,6 +254,7 @@ def _save_generated_plan(meal_plan: MealPlan, payload: dict) -> None:
                 fat_g=meal.get("fat_g"),
                 prep_minutes=meal.get("prep_minutes"),
                 emoji=meal.get("emoji", ""),
+                image_url=image_url,
                 ingredients=meal.get("ingredients", []),
                 steps=meal.get("steps", []),
                 tags=meal.get("tags", []),

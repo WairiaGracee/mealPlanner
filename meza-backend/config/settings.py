@@ -156,3 +156,4 @@ CORS_ALLOW_CREDENTIALS = True
 
 GOOGLE_CLIENT_ID = config("GOOGLE_CLIENT_ID", default="")
 GEMINI_API_KEY = config("GEMINI_API_KEY", default="")
+PEXELS_API_KEY = config("PEXELS_API_KEY", default="")

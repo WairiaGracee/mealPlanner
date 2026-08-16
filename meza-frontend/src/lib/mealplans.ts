@@ -98,6 +98,35 @@ export function getRecipes() {
 export function getActiveMealPlan() {
   return api.get<MealPlanDetail>("/mealplans/active/");
 }
+export interface Profile {
+  id: string;
+  goal: string;
+  household: string;
+  diet_style: string;
+  allergies: string[];
+  cooking_time: string;
+  budget: string;
+  weight_kg: number | null;
+  height_cm: number | null;
+  onboarding_completed: boolean;
+}
+
+const GOAL_LABELS: Record<string, string> = {
+  lose_weight: "Weight loss",
+  eat_healthier: "Balanced",
+  manage_condition: "Condition-friendly",
+  gain_muscle: "High protein",
+  save_money: "Budget-friendly",
+};
+
+export function getMyProfile() {
+  return api.get<Profile>("/profile/me/");
+}
+
+export function goalLabel(goal: string): string {
+  return GOAL_LABELS[goal] ?? "Personalized";
+}
+
 export function toggleGroceryItem(id: string, isChecked: boolean) {
   return api.patch<GroceryListItem>(`/mealplans/grocery-items/${id}/`, {
     is_checked: isChecked,

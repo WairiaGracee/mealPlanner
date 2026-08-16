@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "../components/dashboard/DashboardLayout";
+import { IconBasket, IconCheck, IconLeaf } from "../components/dashboard/icons";
 import { useAuth } from "../context/authContext";
 import {
   getActiveMealPlan,
@@ -96,47 +97,97 @@ export default function GroceryListPage() {
   }, {});
 
   const checkedCount = items.filter((i) => i.is_checked).length;
+  const pct = items.length > 0 ? Math.round((checkedCount / items.length) * 100) : 0;
 
   return (
     <DashboardLayout userName={userName}>
       <div className="mx-auto flex max-w-3xl flex-col gap-6 pt-6 sm:pt-8">
-        <div className="flex items-center justify-between">
-          <h1 className="font-display text-3xl text-ink">Grocery list</h1>
-          <span className="text-sm text-inkMuted">
-            {checkedCount} / {items.length} checked
-          </span>
-        </div>
+        {/* Header */}
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+          <div>
+            <h1 className="font-display text-3xl text-ink">Grocery list</h1>
+            <p className="mt-1 text-sm text-inkMuted">
+              Everything you need for this week's meals, organized by aisle.
+            </p>
+            <div className="mt-2 h-[3px] w-14 rounded-full bg-clay" />
+          </div>
 
-        {Object.entries(grouped).map(([category, categoryItems]) => (
-          <div key={category} className="rounded-2xl border border-line bg-paper p-5 sm:p-6">
-            <h2 className="font-mono text-xs font-medium uppercase tracking-[0.12em] text-inkMuted">
-              {CATEGORY_LABELS[category] ?? category}
-            </h2>
-            <div className="mt-3 flex flex-col gap-1">
-              {categoryItems.map((item) => (
-                <label
-                  key={item.id}
-                  className="flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 transition-colors hover:bg-forest-light"
-                >
-                  <input
-                    type="checkbox"
-                    checked={item.is_checked}
-                    onChange={() => handleToggle(item)}
-                    className="h-4 w-4 flex-shrink-0 rounded border-line accent-forest"
-                  />
-                  <span
-                    className={`text-sm ${
-                      item.is_checked ? "text-inkMuted line-through" : "text-ink"
-                    }`}
-                  >
-                    {item.name}
-                    {item.quantity ? ` — ${item.quantity}` : ""}
-                  </span>
-                </label>
-              ))}
+          <div className="flex flex-wrap items-stretch gap-3">
+            <div className="flex items-center divide-x divide-line rounded-2xl border border-line bg-paper px-5 py-3">
+              <div className="pr-5 text-center">
+                <p className="font-display text-xl text-ink">
+                  {checkedCount}/{items.length}
+                </p>
+                <p className="text-[11px] text-inkMuted">Items checked</p>
+              </div>
+              <div className="pl-5 text-center">
+                <p className="font-display text-xl text-ink">{pct}%</p>
+                <p className="flex items-center justify-center gap-1 text-[11px] text-inkMuted">
+                  <IconLeaf className="h-3 w-3 text-forest" />
+                  Complete
+                </p>
+              </div>
+            </div>
+
+            <div className="flex max-w-xs items-center gap-3 rounded-2xl border border-line bg-forest-light/50 px-4 py-3">
+              <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-forest/10 text-forest">
+                <IconBasket className="h-5 w-5" />
+              </span>
+              <p className="text-xs text-ink">
+                <strong className="font-robotoCondensed font-medium">
+                  Tap to check off.
+                </strong>
+                <br />
+                Your progress is saved as you shop.
+              </p>
             </div>
           </div>
-        ))}
+        </div>
+
+        {/* Progress bar */}
+        <div className="h-2 w-full overflow-hidden rounded-full bg-forest-light">
+          <div
+            className="h-full rounded-full bg-forest transition-all duration-300"
+            style={{ width: `${pct}%` }}
+          />
+        </div>
+
+        {/* Categories */}
+        <div className="flex flex-col gap-3">
+          {Object.entries(grouped).map(([category, categoryItems]) => (
+            <div key={category} className="rounded-2xl border border-line bg-paper p-5 sm:p-6">
+              <h2 className="font-mono text-xs font-medium uppercase tracking-[0.12em] text-inkMuted">
+                {CATEGORY_LABELS[category] ?? category}
+              </h2>
+              <div className="mt-3 flex flex-col gap-1">
+                {categoryItems.map((item) => (
+                  <label
+                    key={item.id}
+                    className="flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 transition-colors hover:bg-forest-light"
+                  >
+                    <span className="relative flex h-5 w-5 flex-shrink-0 items-center justify-center">
+                      <input
+                        type="checkbox"
+                        checked={item.is_checked}
+                        onChange={() => handleToggle(item)}
+                        className="peer h-5 w-5 flex-shrink-0 cursor-pointer appearance-none rounded-md border border-line bg-paper transition-colors checked:border-forest checked:bg-forest"
+                      />
+                      <IconCheck className="pointer-events-none absolute h-3 w-3 text-offwhite opacity-0 peer-checked:opacity-100" />
+                    </span>
+                    <span
+                      className={`text-sm ${
+                        item.is_checked ? "text-inkMuted line-through" : "text-ink"
+                      }`}
+                    >
+                      {item.name}
+                      {item.quantity ? ` — ${item.quantity}` : ""}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </DashboardLayout>
   );
