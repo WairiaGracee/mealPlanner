@@ -6,4 +6,5 @@ urlpatterns = [
     path("api/auth/", include("accounts.urls")),
     path("api/profile/", include("profiles.urls")),
     path("api/mealplans/", include("mealplans.urls")),
+    path("api/calendar/", include("calendarsync.urls")),
 ]

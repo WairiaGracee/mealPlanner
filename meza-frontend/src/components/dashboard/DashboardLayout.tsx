@@ -105,7 +105,7 @@ export default function DashboardLayout({ userName, children }: DashboardLayoutP
     navigate("/");
   }
 
-  function handleItemClick(item: NavItem) {
+function handleItemClick(item: NavItem) {
     if (item.action === "logout") {
       handleLogout();
       return;
@@ -114,7 +114,13 @@ export default function DashboardLayout({ userName, children }: DashboardLayoutP
       navigate(item.path);
       return;
     }
-    // TODO: wire up real Google Calendar sync / plan export once the backend supports it.
+    if (item.action === "google-calendar") {
+      // Connect/sync UI lives on the Settings page, since it needs to
+      // show connection status and handle the redirect back from Google.
+      navigate("/settings");
+      return;
+    }
+    // TODO: wire up real plan export once the backend supports it.
   }
 
   function renderSection(section: NavSection) {

@@ -13,6 +13,8 @@ import MealPlannerPage from "./pages/MealPlannerPage";
 import RecipesPage from "./pages/RecipesPage";
 import GroceryListPage from "./pages/GroceryListPage";
 import NutritionPage from "./pages/NutritionPage";
+import RecipeQuizPage from "./pages/RecipeQuizPage";
+import SettingsPage from "./pages/SettingsPage";
 
 function App() {
   return (
@@ -77,6 +79,22 @@ function App() {
             element={
               <ProtectedRoute>
                 <NutritionPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/games/recipe-quiz"
+            element={
+              <ProtectedRoute>
+                <RecipeQuizPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <ProtectedRoute>
+                <SettingsPage />
               </ProtectedRoute>
             }
           />

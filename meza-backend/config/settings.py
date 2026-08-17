@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     "accounts",
     "profiles",
     "mealplans",
+    "calendarsync",
 ]
 
 MIDDLEWARE = [
@@ -157,3 +158,17 @@ CORS_ALLOW_CREDENTIALS = True
 GOOGLE_CLIENT_ID = config("GOOGLE_CLIENT_ID", default="")
 GEMINI_API_KEY = config("GEMINI_API_KEY", default="")
 PEXELS_API_KEY = config("PEXELS_API_KEY", default="")
+
+# --- Google Calendar sync ---
+# A separate OAuth flow/consent from Google Sign-In above: sign-in only
+# verifies identity via an ID token, while this requests the
+# calendar.events scope with offline access so we can create events on
+# the user's own calendar later. Needs its own client secret because
+# the backend exchanges an authorization code server-side.
+
+GOOGLE_CLIENT_SECRET = config("GOOGLE_CLIENT_SECRET", default="")
+GOOGLE_CALENDAR_REDIRECT_URI = config(
+    "GOOGLE_CALENDAR_REDIRECT_URI",
+    default="http://localhost:8000/api/calendar/callback/",
+)
+FRONTEND_URL = config("FRONTEND_URL", default="http://localhost:5173")
