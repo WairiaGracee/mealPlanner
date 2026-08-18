@@ -1,6 +1,8 @@
 import { useState } from "react";
 import type { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/authContext";
+import Modal from "../ui/Modal";
 import Logo from "../ui/Logo";
 import Avatar from "../ui/Avatar";
 import {
@@ -92,20 +94,41 @@ const ACCOUNT_SECTION: NavSection = {
 
 export default function DashboardLayout({ userName, children }: DashboardLayoutProps) {
   const navigate = useNavigate();
+  const { logout } = useAuth();
   const [openSections, setOpenSections] = useState<Record<string, boolean>>(() =>
     Object.fromEntries(NAV_SECTIONS.map((s) => [s.label, Boolean(s.defaultOpen)]))
   );
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
+  const [logoutError, setLogoutError] = useState<string | null>(null);
 
   function toggleSection(label: string) {
     setOpenSections((prev) => ({ ...prev, [label]: !prev[label] }));
   }
 
   function handleLogout() {
-    // TODO: hook up to real auth/session teardown.
-    navigate("/");
+    setLogoutError(null);
+    setShowLogoutConfirm(true);
   }
 
-function handleItemClick(item: NavItem) {
+  function cancelLogout() {
+    setShowLogoutConfirm(false);
+  }
+
+  async function confirmLogout() {
+    setLoggingOut(true);
+    setLogoutError(null);
+    try {
+      await logout();
+      navigate("/");
+    } catch {
+      setLogoutError("Couldn't log out — check your connection and try again.");
+    } finally {
+      setLoggingOut(false);
+    }
+  }
+
+  function handleItemClick(item: NavItem) {
     if (item.action === "logout") {
       handleLogout();
       return;
@@ -248,6 +271,35 @@ function handleItemClick(item: NavItem) {
           {children}
         </main>
       </div>
+
+      <Modal open={showLogoutConfirm} onClose={cancelLogout}>
+        <div className="flex flex-col items-center text-center">
+          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-red-50 text-red-500">
+            <IconLogout className="h-5 w-5" />
+          </span>
+          <h2 className="mt-4 font-display text-lg text-ink">Log out of Meza?</h2>
+          <p className="mt-1 text-sm text-inkMuted">
+            You'll need to sign back in to see your meal plans and grocery list.
+          </p>
+          {logoutError && <p className="mt-3 text-xs text-red-600">{logoutError}</p>}
+          <div className="mt-6 flex w-full gap-3">
+            <button
+              onClick={cancelLogout}
+              disabled={loggingOut}
+              className="flex-1 rounded-full border border-line px-4 py-2.5 text-sm font-medium text-ink/80 transition-colors hover:bg-forest-light disabled:opacity-60"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={confirmLogout}
+              disabled={loggingOut}
+              className="flex-1 rounded-full bg-red-500 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-red-600 disabled:opacity-60"
+            >
+              {loggingOut ? "Logging out…" : "Log out"}
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

@@ -15,11 +15,13 @@ import GroceryListPage from "./pages/GroceryListPage";
 import NutritionPage from "./pages/NutritionPage";
 import RecipeQuizPage from "./pages/RecipeQuizPage";
 import SettingsPage from "./pages/SettingsPage";
+import OnboardingReminderModal from "./components/auth/OnboardingReminderModal";
 
 function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
+        <OnboardingReminderModal />
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/meal-plans" element={<SampleMealPlansPage />} />

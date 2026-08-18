@@ -45,30 +45,57 @@ export default function GoogleButton({
   const initializedRef = useRef(false);
 
   useEffect(() => {
-    if (!GOOGLE_CLIENT_ID || !window.google || !buttonRef.current) return;
-    if (initializedRef.current) return;
-    initializedRef.current = true;
+    if (!GOOGLE_CLIENT_ID) return;
 
-    window.google.accounts.id.initialize({
-      client_id: GOOGLE_CLIENT_ID,
-      callback: async (response: { credential: string }) => {
-        try {
-          await loginWithGoogleRef.current(response.credential);
-          onSuccessRef.current?.();
-        } catch {
-          onErrorRef.current?.("Google sign-in failed. Please try again.");
-        }
-      },
-    });
+    function render() {
+      if (!window.google || !buttonRef.current || initializedRef.current) return;
+      initializedRef.current = true;
 
-    window.google.accounts.id.renderButton(buttonRef.current, {
-      type: "standard",
-      theme: "outline",
-      size: "large",
-      shape: "pill",
-      width: buttonRef.current.offsetWidth || 320,
-      text: label.toLowerCase().startsWith("sign up") ? "signup_with" : "signin_with",
-    });
+      window.google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: async (response: { credential: string }) => {
+          try {
+            await loginWithGoogleRef.current(response.credential);
+            onSuccessRef.current?.();
+          } catch {
+            onErrorRef.current?.("Google sign-in failed. Please try again.");
+          }
+        },
+      });
+
+      window.google.accounts.id.renderButton(buttonRef.current!, {
+        type: "standard",
+        theme: "outline",
+        size: "large",
+        shape: "pill",
+        width: buttonRef.current!.offsetWidth || 320,
+        text: label.toLowerCase().startsWith("sign up") ? "signup_with" : "signin_with",
+      });
+    }
+
+    if (window.google) {
+      render();
+      return;
+    }
+
+    // The GSI <script> tag in index.html loads with async/defer, so on
+    // first mount (or a slow connection) window.google may not exist
+    // yet — without this poll the effect above would just no-op once
+    // and the button would silently never appear. Bounded at 10s so we
+    // don't poll forever if the script fails to load (e.g. blocked by
+    // an ad blocker or offline).
+    const interval = setInterval(() => {
+      if (window.google) {
+        clearInterval(interval);
+        render();
+      }
+    }, 100);
+    const timeout = setTimeout(() => clearInterval(interval), 10000);
+
+    return () => {
+      clearInterval(interval);
+      clearTimeout(timeout);
+    };
     // Intentionally run once per mount + label change — see comment above.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [label]);
