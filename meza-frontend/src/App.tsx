@@ -11,6 +11,7 @@ import GeneratingPage from "./pages/GeneratingPage";
 import DashboardPage from "./pages/DashboardPage";
 import MealPlannerPage from "./pages/MealPlannerPage";
 import RecipesPage from "./pages/RecipesPage";
+import RecipeDetailPage from "./pages/RecipeDetailPage";
 import GroceryListPage from "./pages/GroceryListPage";
 import NutritionPage from "./pages/NutritionPage";
 import RecipeQuizPage from "./pages/RecipeQuizPage";
@@ -65,6 +66,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <RecipesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/recipes/:id"
+            element={
+              <ProtectedRoute>
+                <RecipeDetailPage />
               </ProtectedRoute>
             }
           />

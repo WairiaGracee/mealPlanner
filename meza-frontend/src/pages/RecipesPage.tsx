@@ -1,6 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "../components/dashboard/DashboardLayout";
+import ExportMenu from "../components/export/ExportMenu";
+import RecipeExportCard from "../components/export/RecipeExportCard";
 import { IconBook, IconFlame, IconStopwatch } from "../components/dashboard/icons";
 import { useAuth } from "../context/authContext";
 import { getRecipes, type Recipe } from "../lib/mealplans";
@@ -10,6 +13,8 @@ export default function RecipesPage() {
   const navigate = useNavigate();
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
+  const [exportingRecipe, setExportingRecipe] = useState<Recipe | null>(null);
+  const exportRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -112,8 +117,25 @@ export default function RecipesPage() {
             {recipes.map((recipe) => (
               <div
                 key={recipe.id}
-                className="group overflow-hidden rounded-2xl border border-line bg-paper p-4 transition-colors hover:border-forest/40 hover:bg-forest-light/20"
+                onClick={() => navigate(`/recipes/${recipe.id}`)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") navigate(`/recipes/${recipe.id}`);
+                }}
+                className="group relative cursor-pointer overflow-hidden rounded-2xl border border-line bg-paper p-4 transition-colors hover:border-forest/40 hover:bg-forest-light/20"
               >
+                <div
+                  className="absolute right-2 top-2 z-10"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <ExportMenu
+                    compact
+                    targetRef={exportRef}
+                    filename={`meza-recipe-${recipe.name.toLowerCase().replace(/\s+/g, "-")}`}
+                    onBeforeOpen={() => flushSync(() => setExportingRecipe(recipe))}
+                  />
+                </div>
                 <div className="flex h-28 items-center justify-center overflow-hidden rounded-xl bg-forest-light text-4xl">
                   {recipe.image_url ? (
                     <img
@@ -148,6 +170,8 @@ export default function RecipesPage() {
           </div>
         )}
       </div>
+
+      {exportingRecipe && <RecipeExportCard ref={exportRef} recipe={exportingRecipe} />}
     </DashboardLayout>
   );
 }

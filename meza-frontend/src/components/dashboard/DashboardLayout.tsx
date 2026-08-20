@@ -143,6 +143,12 @@ export default function DashboardLayout({ userName, children }: DashboardLayoutP
       navigate("/settings");
       return;
     }
+    if (item.action === "export-plan") {
+      // The actual Export button (image/PDF) lives on the Meal Planner
+      // page next to the week it applies to.
+      navigate("/plan");
+      return;
+    }
     // TODO: wire up real plan export once the backend supports it.
   }
 

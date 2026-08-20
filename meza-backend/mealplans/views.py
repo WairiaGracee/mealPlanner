@@ -116,3 +116,18 @@ class RecipeListView(APIView):
             .order_by("-created_at")
         )
         return Response(RecipeSerializer(recipes, many=True).data)
+
+
+class RecipeDetailView(APIView):
+    """GET /api/mealplans/recipes/<id>/ — a single recipe, scoped to
+    recipes that have appeared in one of the user's own meal plans (so
+    people can't enumerate other users' recipes by guessing ids)."""
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, pk):
+        recipe = get_object_or_404(
+            Recipe.objects.filter(planned_meals__meal_plan__user=request.user).distinct(),
+            pk=pk,
+        )
+        return Response(RecipeSerializer(recipe).data)

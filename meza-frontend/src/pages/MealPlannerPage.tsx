@@ -1,6 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "../components/dashboard/DashboardLayout";
+import ExportMenu from "../components/export/ExportMenu";
+import MealPlanExportCard from "../components/export/MealPlanExportCard";
 import {
   IconBasket,
   IconCalendar,
@@ -35,6 +37,7 @@ export default function MealPlannerPage() {
   const [regenerating, setRegenerating] = useState(false);
   const [favorited, setFavorited] = useState<Set<string>>(new Set());
   const [expandedDays, setExpandedDays] = useState<Set<number>>(new Set());
+  const exportRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -208,6 +211,8 @@ export default function MealPlannerPage() {
             <IconPencil className="h-4 w-4" />
             Edit plan
           </button>
+
+          <ExportMenu targetRef={exportRef} filename={`meza-meal-plan-${plan.week_start_date}`} />
         </div>
 
         {/* Week list */}
@@ -240,6 +245,8 @@ export default function MealPlannerPage() {
           </button>
         </div>
       </div>
+
+      <MealPlanExportCard ref={exportRef} week={week} weekRange={weekRange} userName={userName} />
     </DashboardLayout>
   );
 }

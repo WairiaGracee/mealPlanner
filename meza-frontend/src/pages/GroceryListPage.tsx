@@ -1,6 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "../components/dashboard/DashboardLayout";
+import ExportMenu from "../components/export/ExportMenu";
+import GroceryListExportCard from "../components/export/GroceryListExportCard";
 import { IconBasket, IconCheck, IconLeaf } from "../components/dashboard/icons";
 import { useAuth } from "../context/authContext";
 import {
@@ -9,6 +11,7 @@ import {
   type GroceryListItem,
   type MealPlanDetail,
 } from "../lib/mealplans";
+import { formatWeekRange } from "../lib/planTransforms";
 import { ApiError } from "../lib/api";
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -27,6 +30,7 @@ export default function GroceryListPage() {
   const [items, setItems] = useState<GroceryListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [hasNoPlan, setHasNoPlan] = useState(false);
+  const exportRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -141,6 +145,8 @@ export default function GroceryListPage() {
                 Your progress is saved as you shop.
               </p>
             </div>
+
+            <ExportMenu targetRef={exportRef} filename={`meza-grocery-list-${plan.week_start_date}`} />
           </div>
         </div>
 
@@ -189,6 +195,8 @@ export default function GroceryListPage() {
           ))}
         </div>
       </div>
+
+      <GroceryListExportCard ref={exportRef} items={items} weekRange={formatWeekRange(plan)} />
     </DashboardLayout>
   );
 }

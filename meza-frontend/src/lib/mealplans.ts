@@ -95,6 +95,10 @@ export function getRecipes() {
   return api.get<Recipe[]>("/mealplans/recipes/");
 }
 
+export function getRecipe(id: string) {
+  return api.get<Recipe>(`/mealplans/recipes/${id}/`);
+}
+
 export function getActiveMealPlan() {
   return api.get<MealPlanDetail>("/mealplans/active/");
 }
