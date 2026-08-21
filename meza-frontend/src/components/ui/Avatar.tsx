@@ -1,5 +1,6 @@
 interface AvatarProps {
   name: string;
+  imageUrl?: string | null;
   className?: string;
 }
 
@@ -24,7 +25,17 @@ function paletteFor(name: string) {
   return PALETTE[sum % PALETTE.length];
 }
 
-export default function Avatar({ name, className = "h-12 w-12" }: AvatarProps) {
+export default function Avatar({ name, imageUrl, className = "h-12 w-12" }: AvatarProps) {
+  if (imageUrl) {
+    return (
+      <img
+        src={imageUrl}
+        alt={name}
+        className={`flex-shrink-0 rounded-full object-cover ${className}`}
+      />
+    );
+  }
+
   const { bg, text } = paletteFor(name);
 
   return (

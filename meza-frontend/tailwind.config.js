@@ -3,31 +3,37 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        offwhite: "#FAF6EE",
-        paper: "#FFFFFF",
+        // Personalization: every brand color reads from a CSS custom
+        // property (set in index.css) instead of a fixed hex value, so
+        // switching `data-theme` on <html> re-skins the whole app
+        // without touching a single className. The landing/marketing
+        // pages (which don't opt into personalization) just see the
+        // "nourish" defaults since that's what :root holds.
+        offwhite: "rgb(var(--color-offwhite) / <alpha-value>)",
+        paper: "rgb(var(--color-paper) / <alpha-value>)",
         forest: {
-          DEFAULT: "#2F4B33",
-          deep: "#1E3323",
-          light: "#E7EFE3",
+          DEFAULT: "rgb(var(--color-forest) / <alpha-value>)",
+          deep: "rgb(var(--color-forest-deep) / <alpha-value>)",
+          light: "rgb(var(--color-forest-light) / <alpha-value>)",
         },
-        ink: "#22301F",
-        inkMuted: "#6B7568",
-        line: "#E8E2D3",
+        ink: "rgb(var(--color-ink) / <alpha-value>)",
+        inkMuted: "rgb(var(--color-ink-muted) / <alpha-value>)",
+        line: "rgb(var(--color-line) / <alpha-value>)",
         charcoal: {
-          DEFAULT: "#12201B",
-          deep: "#0D1512",
-          light: "#1B2C24",
+          DEFAULT: "rgb(var(--color-charcoal) / <alpha-value>)",
+          deep: "rgb(var(--color-charcoal-deep) / <alpha-value>)",
+          light: "rgb(var(--color-charcoal-light) / <alpha-value>)",
         },
-        cream: "#EFE8DA",
-        muted: "#9CA69B",
-        gold: "#C79A56",
-        clay: "#B65B3D",
-        sukuma: "#7A9B5C",
-        textLight: "#1B2C24",
+        cream: "rgb(var(--color-cream) / <alpha-value>)",
+        muted: "rgb(var(--color-muted) / <alpha-value>)",
+        gold: "rgb(var(--color-gold) / <alpha-value>)",
+        clay: "rgb(var(--color-clay) / <alpha-value>)",
+        sukuma: "rgb(var(--color-sukuma) / <alpha-value>)",
+        textLight: "rgb(var(--color-charcoal-light) / <alpha-value>)",
       },
       fontFamily: {
-        display: ['"Fraunces"', "serif"],
-        sans: ['"Inter"', "sans-serif"],
+        display: ["var(--font-display)", "serif"],
+        sans: ["var(--font-sans)", "sans-serif"],
         mono: ['"Space Mono"', "monospace"],
         robotoCondensed: ['"Roboto Condensed"', "sans-serif"]
       },

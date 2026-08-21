@@ -2,9 +2,12 @@ import { useState } from "react";
 import type { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/authContext";
+import { usePreferences } from "../../context/PreferencesContext";
+import type { TranslationKey } from "../../i18n/translations";
 import Modal from "../ui/Modal";
 import Logo from "../ui/Logo";
 import Avatar from "../ui/Avatar";
+import ProfileDrawer from "../profile/ProfileDrawer";
 import {
   IconGrid,
   IconClipboard,
@@ -34,6 +37,7 @@ interface DashboardLayoutProps {
 
 interface NavItem {
   label: string;
+  tKey: TranslationKey;
   icon: typeof IconGrid;
   path?: string;
   action?: "google-calendar" | "export-plan" | "logout";
@@ -41,6 +45,7 @@ interface NavItem {
 
 interface NavSection {
   label: string;
+  tKey: TranslationKey;
   defaultOpen?: boolean;
   items: NavItem[];
 }
@@ -48,59 +53,66 @@ interface NavSection {
 const NAV_SECTIONS: NavSection[] = [
   {
     label: "Menu",
+    tKey: "nav_menu",
     defaultOpen: true,
     items: [
-      { label: "Dashboard", icon: IconGrid, path: "/dashboard" },
-      { label: "Meal Planner", icon: IconClipboard, path: "/plan" },
-      { label: "Recipes", icon: IconBook, path: "/recipes" },
-      { label: "Grocery List", icon: IconCart, path: "/shopping-list" },
-      { label: "Nutrition", icon: IconTarget, path: "/nutrition" },
+      { label: "Dashboard", tKey: "nav_dashboard", icon: IconGrid, path: "/dashboard" },
+      { label: "Meal Planner", tKey: "nav_meal_planner", icon: IconClipboard, path: "/plan" },
+      { label: "Recipes", tKey: "nav_recipes", icon: IconBook, path: "/recipes" },
+      { label: "Grocery List", tKey: "nav_grocery_list", icon: IconCart, path: "/shopping-list" },
+      { label: "Nutrition", tKey: "nav_nutrition", icon: IconTarget, path: "/nutrition" },
     ],
   },
   {
     label: "My Collection",
+    tKey: "nav_collection",
     items: [
-      { label: "Favorites", icon: IconHeart, path: "/favourites" },
-      { label: "Saved Meals", icon: IconBookmark, path: "/saved-meals" },
-      { label: "Meal History", icon: IconHistory, path: "/meal-history" },
+      { label: "Favorites", tKey: "nav_favorites", icon: IconHeart, path: "/favourites" },
+      { label: "Saved Meals", tKey: "nav_saved_meals", icon: IconBookmark, path: "/saved-meals" },
+      { label: "Meal History", tKey: "nav_meal_history", icon: IconHistory, path: "/meal-history" },
     ],
   },
   {
     label: "Food Games",
+    tKey: "nav_food_games",
     items: [
-      { label: "Recipe Quiz", icon: IconGamepad, path: "/games/recipe-quiz" },
-      { label: "Cooking Challenges", icon: IconTrophy, path: "/games/cooking-challenges" },
-      { label: "Pantry Match", icon: IconGamepad, path: "/games/pantry-match" },
-      { label: "Build Your Plate", icon: IconTarget, path: "/games/build-your-plate" },
+      { label: "Recipe Quiz", tKey: "nav_recipe_quiz", icon: IconGamepad, path: "/games/recipe-quiz" },
+      { label: "Cooking Challenges", tKey: "nav_cooking_challenges", icon: IconTrophy, path: "/games/cooking-challenges" },
+      { label: "Pantry Match", tKey: "nav_pantry_match", icon: IconGamepad, path: "/games/pantry-match" },
+      { label: "Build Your Plate", tKey: "nav_build_your_plate", icon: IconTarget, path: "/games/build-your-plate" },
     ],
   },
   {
     label: "Tools",
+    tKey: "nav_tools",
     items: [
-      { label: "Add to Google Calendar", icon: IconCalendar, action: "google-calendar" },
-      { label: "Export Plan", icon: IconDownload, action: "export-plan" },
+      { label: "Add to Google Calendar", tKey: "nav_add_google_calendar", icon: IconCalendar, action: "google-calendar" },
+      { label: "Export Plan", tKey: "nav_export_plan", icon: IconDownload, action: "export-plan" },
     ],
   },
 ];
 
 const ACCOUNT_SECTION: NavSection = {
   label: "Account",
+  tKey: "nav_account",
   items: [
-    { label: "Settings", icon: IconSettings, path: "/settings" },
-    { label: "Help & Support", icon: IconHelp, path: "/help" },
-    { label: "Log Out", icon: IconLogout, action: "logout" },
+    { label: "Settings", tKey: "nav_settings", icon: IconSettings, path: "/settings" },
+    { label: "Help & Support", tKey: "nav_help", icon: IconHelp, path: "/help" },
+    { label: "Log Out", tKey: "nav_logout", icon: IconLogout, action: "logout" },
   ],
 };
 
 export default function DashboardLayout({ userName, children }: DashboardLayoutProps) {
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
+  const { t } = usePreferences();
   const [openSections, setOpenSections] = useState<Record<string, boolean>>(() =>
     Object.fromEntries(NAV_SECTIONS.map((s) => [s.label, Boolean(s.defaultOpen)]))
   );
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
   const [logoutError, setLogoutError] = useState<string | null>(null);
+  const [showProfileDrawer, setShowProfileDrawer] = useState(false);
 
   function toggleSection(label: string) {
     setOpenSections((prev) => ({ ...prev, [label]: !prev[label] }));
@@ -162,7 +174,7 @@ export default function DashboardLayout({ userName, children }: DashboardLayoutP
           className="flex w-full items-center font-robotoCondensed justify-between rounded-lg px-3 py-2 text-left transition-colors hover:bg-forest-light"
         >
           <span className="font-robotoCondensed text-[12px] font-medium uppercase tracking-[0.12em] text-inkMuted">
-            {section.label}
+            {t(section.tKey)}
           </span>
           <IconChevronDown
             className={`h-3.5 w-3.5 flex-shrink-0 text-inkMuted transition-transform duration-200 ${
@@ -187,7 +199,7 @@ export default function DashboardLayout({ userName, children }: DashboardLayoutP
                   }`}
                 >
                   <Icon className="h-[18px] w-[18px] flex-shrink-0" />
-                  {item.label}
+                  {t(item.tKey)}
                 </button>
               );
             })}
@@ -201,7 +213,7 @@ export default function DashboardLayout({ userName, children }: DashboardLayoutP
     return (
       <div key={section.label} className="pb-1">
         <p className="px-3 py-2 font-robotoCondensed text-[11px] font-medium uppercase tracking-[0.12em] text-inkMuted">
-          {section.label}
+          {t(section.tKey)}
         </p>
         <div className="flex flex-col gap-1 font-robotoCondensed">
           {section.items.map((item) => {
@@ -213,7 +225,7 @@ export default function DashboardLayout({ userName, children }: DashboardLayoutP
                 className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm text-ink/80 transition-colors hover:bg-forest-light"
               >
                 <Icon className="h-[18px] w-[18px] flex-shrink-0" />
-                {item.label}
+                {t(item.tKey)}
               </button>
             );
           })}
@@ -223,7 +235,7 @@ export default function DashboardLayout({ userName, children }: DashboardLayoutP
   }
 
   return (
-    <div className="bg-offwhite bg-fruit-pattern bg-repeat lg:flex lg:h-screen lg:overflow-hidden lg:gap-2 lg:p-2">
+    <div className="themed-bg lg:flex lg:h-screen lg:overflow-hidden lg:gap-2 lg:p-2">
       <aside className="hidden w-72 flex-shrink-0 flex-col rounded-r-2xl border-r border-line bg-paper py-7 shadow-[4px_0_16px_-4px_rgba(0,0,0,0.08)] lg:flex lg:h-screen">
         <button onClick={() => navigate("/")} className="px-7 text-left">
           <Logo className="h-10 w-auto" />
@@ -234,7 +246,7 @@ export default function DashboardLayout({ userName, children }: DashboardLayoutP
           className="mx-5 mt-6 flex items-center justify-center gap-2 rounded-xl bg-forest px-4 py-2.5 text-sm font-medium text-offwhite transition-colors hover:bg-forest-deep"
         >
           <IconPlus className="h-4 w-4" strokeWidth={2} />
-          Plan a Meal
+          {t("plan_a_meal")}
         </button>
 
         <nav className="scroll-on-hover mt-7 flex-1 overflow-y-auto px-5 pb-2">
@@ -250,7 +262,13 @@ export default function DashboardLayout({ userName, children }: DashboardLayoutP
           <Logo className="h-9 w-auto" />
           <div className="flex items-center gap-4">
             <IconBell className="h-5 w-5 text-inkMuted" />
-            <Avatar name={userName} className="h-9 w-9 text-xs" />
+            <button
+              onClick={() => setShowProfileDrawer(true)}
+              aria-label={t("drawer_my_profile")}
+              className="rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-forest"
+            >
+              <Avatar name={userName} imageUrl={user?.avatar_url} className="h-9 w-9 text-xs" />
+            </button>
           </div>
         </header>
 
@@ -259,17 +277,20 @@ export default function DashboardLayout({ userName, children }: DashboardLayoutP
             <IconSearch className="h-4 w-4 flex-shrink-0" />
             <input
               type="text"
-              placeholder="Search recipes, meals, or ingredients…"
+              placeholder={t("search_placeholder")}
               className="w-full bg-transparent text-sm text-ink placeholder:text-inkMuted focus:outline-none"
             />
           </label>
 
           <div className="flex flex-shrink-0 items-center gap-5">
             <IconBell className="h-5 w-5 text-inkMuted" />
-            <div className="flex items-center gap-2">
-              <Avatar name={userName} className="h-9 w-9 text-xs" />
+            <button
+              onClick={() => setShowProfileDrawer(true)}
+              className="flex items-center gap-2 rounded-full transition-opacity hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-forest"
+            >
+              <Avatar name={userName} imageUrl={user?.avatar_url} className="h-9 w-9 text-xs" />
               <span className="text-sm font-medium text-ink">{userName}</span>
-            </div>
+            </button>
           </div>
         </header>
 
@@ -306,6 +327,12 @@ export default function DashboardLayout({ userName, children }: DashboardLayoutP
           </div>
         </div>
       </Modal>
+
+      <ProfileDrawer
+        open={showProfileDrawer}
+        onClose={() => setShowProfileDrawer(false)}
+        userName={userName}
+      />
     </div>
   );
 }

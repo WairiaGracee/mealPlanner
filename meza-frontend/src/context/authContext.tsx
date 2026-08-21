@@ -15,6 +15,10 @@ interface AuthContextValue {
   login: (data: { email: string; password: string }) => Promise<void>;
   loginWithGoogle: (idToken: string) => Promise<void>;
   logout: () => Promise<void>;
+  // PATCH /auth/me/ — display name and/or avatar photo from the
+  // profile drawer. Pass a File for avatar, omit either field to leave
+  // it unchanged.
+  updateProfile: (data: { fullName?: string; avatar?: File }) => Promise<AuthUser>;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -55,8 +59,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   }
 
+  async function updateProfile(data: { fullName?: string; avatar?: File }) {
+    const formData = new FormData();
+    if (data.fullName !== undefined) formData.append("full_name", data.fullName);
+    if (data.avatar !== undefined) formData.append("avatar", data.avatar);
+    const updated = await api.patchForm<AuthUser>("/auth/me/", formData);
+    setUser(updated);
+    return updated;
+  }
+
   return (
-    <AuthContext.Provider value={{ user, loading, register, login, loginWithGoogle, logout }}>
+    <AuthContext.Provider
+      value={{ user, loading, register, login, loginWithGoogle, logout, updateProfile }}
+    >
       {children}
     </AuthContext.Provider>
   );

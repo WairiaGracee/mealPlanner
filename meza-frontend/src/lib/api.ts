@@ -42,10 +42,15 @@ function extractErrorMessage(body: unknown): string | undefined {
 async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const { skipRefresh, headers, ...rest } = options;
 
+  // For FormData bodies (file uploads), let the browser set its own
+  // multipart Content-Type with the boundary — setting it manually
+  // breaks the boundary parsing.
+  const isFormData = rest.body instanceof FormData;
+
   const response = await fetch(`${API_BASE_URL}${path}`, {
     ...rest,
     headers: {
-      "Content-Type": "application/json",
+      ...(isFormData ? {} : { "Content-Type": "application/json" }),
       ...headers,
     },
     // Sends and receives the httpOnly auth cookies on every request.
@@ -96,4 +101,8 @@ export const api = {
       method: "PATCH",
       body: body !== undefined ? JSON.stringify(body) : undefined,
     }),
+  // Multipart PATCH — for endpoints that accept a file (e.g. avatar
+  // upload) alongside regular fields.
+  patchForm: <T>(path: string, formData: FormData) =>
+    request<T>(path, { method: "PATCH", body: formData }),
 };

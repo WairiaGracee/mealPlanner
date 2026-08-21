@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./context/authContext";
+import { PreferencesProvider } from "./context/PreferencesContext";
 import ProtectedRoute from "./components/auth/ProtectedRoutes";
 import LandingPage from "./pages/LandingPage";
 import SampleMealPlansPage from "./pages/Samplemealplanspage";
@@ -22,6 +23,7 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
+        <PreferencesProvider>
         <OnboardingReminderModal />
         <Routes>
           <Route path="/" element={<LandingPage />} />
@@ -110,6 +112,7 @@ function App() {
             }
           />
         </Routes>
+        </PreferencesProvider>
       </AuthProvider>
     </BrowserRouter>
   );

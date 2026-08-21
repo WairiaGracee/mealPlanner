@@ -28,15 +28,47 @@ class UserSerializer(serializers.ModelSerializer):
     # hasn't finished/skipped the onboarding wizard. Lets the frontend
     # decide login/dashboard redirects without a second API call.
     onboarding_completed = serializers.SerializerMethodField()
+    avatar_url = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ["id", "email", "full_name", "auth_provider", "date_joined", "onboarding_completed"]
+        fields = [
+            "id",
+            "email",
+            "full_name",
+            "auth_provider",
+            "date_joined",
+            "onboarding_completed",
+            "avatar_url",
+        ]
         read_only_fields = fields
 
     def get_onboarding_completed(self, obj):
         profile = getattr(obj, "profile", None)
         return bool(profile and profile.onboarding_completed)
+
+    def get_avatar_url(self, obj):
+        if not obj.avatar:
+            return None
+        request = self.context.get("request")
+        url = obj.avatar.url
+        return request.build_absolute_uri(url) if request else url
+
+
+class UpdateProfileSerializer(serializers.ModelSerializer):
+    """Used for PATCH /api/auth/me/ — deliberately narrower than
+    UserSerializer's read-only field list above: only what the profile
+    drawer actually lets someone change about their account itself
+    (display name, avatar photo). Email/auth_provider changes aren't
+    exposed here on purpose."""
+
+    class Meta:
+        model = User
+        fields = ["full_name", "avatar"]
+        extra_kwargs = {
+            "full_name": {"required": False},
+            "avatar": {"required": False},
+        }
 
 
 class GoogleAuthSerializer(serializers.Serializer):

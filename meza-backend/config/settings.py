@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     "profiles",
     "mealplans",
     "calendarsync",
+    "preferences",
 ]
 
 MIDDLEWARE = [

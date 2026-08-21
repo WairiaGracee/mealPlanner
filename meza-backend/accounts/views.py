@@ -6,6 +6,7 @@ from google.auth import exceptions as google_exceptions
 from google.auth.transport import requests as google_requests
 from google.oauth2 import id_token as google_id_token
 from rest_framework import generics, permissions
+from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.serializers import (
@@ -13,7 +14,12 @@ from rest_framework_simplejwt.serializers import (
     TokenRefreshSerializer,
 )
 
-from .serializers import GoogleAuthSerializer, RegisterSerializer, UserSerializer
+from .serializers import (
+    GoogleAuthSerializer,
+    RegisterSerializer,
+    UpdateProfileSerializer,
+    UserSerializer,
+)
 
 User = get_user_model()
 
@@ -69,7 +75,7 @@ class RegisterView(generics.CreateAPIView):
         token_serializer = TokenObtainPairSerializer()
         refresh = token_serializer.get_token(user)
 
-        response = Response(UserSerializer(user).data, status=201)
+        response = Response(UserSerializer(user, context={"request": request}).data, status=201)
         _set_auth_cookies(response, str(refresh.access_token), str(refresh))
         return response
 
@@ -86,7 +92,7 @@ class LoginView(APIView):
         tokens = serializer.validated_data
         user = serializer.user
 
-        response = Response(UserSerializer(user).data, status=200)
+        response = Response(UserSerializer(user, context={"request": request}).data, status=200)
         _set_auth_cookies(response, str(tokens["access"]), str(tokens["refresh"]))
         return response
 
@@ -150,7 +156,7 @@ class GoogleLoginView(APIView):
         token_serializer = TokenObtainPairSerializer()
         refresh = token_serializer.get_token(user)
 
-        response = Response(UserSerializer(user).data, status=200)
+        response = Response(UserSerializer(user, context={"request": request}).data, status=200)
         _set_auth_cookies(response, str(refresh.access_token), str(refresh))
         return response
 
@@ -193,11 +199,23 @@ class LogoutView(APIView):
         return response
 
 
+@method_decorator(csrf_exempt, name="dispatch")
 class MeView(APIView):
     """GET /api/auth/me/ — the currently authenticated user, or 401 if
-    the access cookie is missing/expired (frontend then tries /refresh/)."""
+    the access cookie is missing/expired (frontend then tries /refresh/).
+
+    PATCH /api/auth/me/ — update display name and/or avatar photo, from
+    the profile drawer. Accepts multipart/form-data (for the avatar
+    file) or plain JSON (for a name-only change)."""
 
     permission_classes = [permissions.IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
 
     def get(self, request):
-        return Response(UserSerializer(request.user).data)
+        return Response(UserSerializer(request.user, context={"request": request}).data)
+
+    def patch(self, request):
+        serializer = UpdateProfileSerializer(request.user, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(UserSerializer(request.user, context={"request": request}).data)

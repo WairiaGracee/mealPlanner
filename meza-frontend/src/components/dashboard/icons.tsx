@@ -361,3 +361,72 @@ export function IconBasket(props: IconProps) {
     </svg>
   );
 }
+export function IconUser(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <circle cx="12" cy="8" r="3.5" />
+      <path d="M5 20c0-3.6 3.1-6.5 7-6.5s7 2.9 7 6.5" />
+    </svg>
+  );
+}
+
+export function IconPalette(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.8-.9 1.8-1.9 0-.5-.2-1-.5-1.3-.3-.3-.5-.8-.5-1.3 0-1 .8-1.8 1.8-1.8H16a4 4 0 0 0 4-4c0-4.3-3.6-7.7-8-7.7Z" />
+      <circle cx="7.5" cy="11" r="1.1" fill="currentColor" stroke="none" />
+      <circle cx="9.5" cy="7.2" r="1.1" fill="currentColor" stroke="none" />
+      <circle cx="14.5" cy="7.2" r="1.1" fill="currentColor" stroke="none" />
+      <circle cx="16.3" cy="11" r="1.1" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
+export function IconGlobe(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M3 12h18M12 3c2.5 2.5 3.8 5.7 3.8 9s-1.3 6.5-3.8 9c-2.5-2.5-3.8-5.7-3.8-9S9.5 5.5 12 3Z" />
+    </svg>
+  );
+}
+
+export function IconCamera(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M4 8.5A1.5 1.5 0 0 1 5.5 7h2l1-2h7l1 2h2A1.5 1.5 0 0 1 20 8.5v9A1.5 1.5 0 0 1 18.5 19h-13A1.5 1.5 0 0 1 4 17.5Z" />
+      <circle cx="12" cy="13" r="3.2" />
+    </svg>
+  );
+}
+
+export function IconShield(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M12 3.5 19 6v6c0 4.5-3 7.5-7 8.5-4-1-7-4-7-8.5V6Z" />
+      <path d="M9.3 12l1.9 1.9 3.6-3.8" />
+    </svg>
+  );
+}
+
+export function IconLink(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M9.5 14.5 14.5 9.5" />
+      <path d="M11 7l1.2-1.2a3.5 3.5 0 0 1 5 5L16 12" />
+      <path d="M13 17l-1.2 1.2a3.5 3.5 0 0 1-5-5L8 12" />
+    </svg>
+  );
+}
+
+export function IconGift(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <rect x="4" y="9" width="16" height="11" rx="1.2" />
+      <path d="M4 13h16" />
+      <path d="M12 9v11" />
+      <path d="M12 9C10 9 8 8 8 6.2A2 2 0 0 1 10 4.2C11.8 4.2 12 7 12 9Z" />
+      <path d="M12 9c2 0 4-1 4-2.8a2 2 0 0 0-2-2C12.2 4.2 12 7 12 9Z" />
+    </svg>
+  );
+}
