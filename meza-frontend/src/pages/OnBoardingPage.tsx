@@ -116,10 +116,10 @@ export default function OnboardingPage() {
   const caption = STEP_CAPTIONS[step - 1];
 
   return (
-    <div className="bg-offwhite bg-fruit-pattern bg-repeat lg:h-screen lg:overflow-hidden">
-      <div className="lg:flex lg:h-screen">
+    <div className="bg-offwhite bg-fruit-pattern bg-repeat xl:h-screen xl:overflow-hidden">
+      <div className="xl:flex xl:h-screen">
         {/* Main content column */}
-        <div className="flex flex-col lg:h-screen lg:flex-[1.3] lg:overflow-hidden">
+        <div className="flex flex-col xl:h-screen xl:flex-[1.3] xl:overflow-hidden">
           <header className="flex flex-shrink-0 items-center justify-between px-6 py-6 md:px-12">
             <Logo className="h-12 w-auto sm:h-14" />
             <button
@@ -136,10 +136,11 @@ export default function OnboardingPage() {
             </div>
           </div>
 
-          <div className="scroll-on-hover mt-6 flex-1 px-6 pb-8 lg:overflow-y-auto md:px-12">
+          <div className="scroll-on-hover mt-6 flex-1 px-6 pb-8 xl:overflow-y-auto md:px-12">
             <div className="mx-auto w-full max-w-xl">
               {step === 1 && (
                 <StepShell
+                  step={step}
                   title="What's your main goal?"
                   subtitle="This shapes the meals and portions we plan for you."
                 >
@@ -160,6 +161,7 @@ export default function OnboardingPage() {
 
               {step === 2 && (
                 <StepShell
+                  step={step}
                   title="Who are you cooking for?"
                   subtitle="We'll size portions and shopping lists accordingly."
                 >
@@ -179,6 +181,7 @@ export default function OnboardingPage() {
 
               {step === 3 && (
                 <StepShell
+                  step={step}
                   title="Any dietary style we should follow?"
                   subtitle="Pick the one that fits best — you can fine-tune later."
                 >
@@ -198,6 +201,7 @@ export default function OnboardingPage() {
 
               {step === 4 && (
                 <StepShell
+                  step={step}
                   title="Any allergies or ingredients to avoid?"
                   subtitle="Select all that apply — we'll keep these out of your plan."
                 >
@@ -217,6 +221,7 @@ export default function OnboardingPage() {
 
               {step === 5 && (
                 <StepShell
+                  step={step}
                   title="How much time can you give to cooking?"
                   subtitle="Per meal, on a typical day."
                 >
@@ -237,6 +242,7 @@ export default function OnboardingPage() {
 
               {step === 6 && (
                 <StepShell
+                  step={step}
                   title="What's your grocery budget like?"
                   subtitle="We'll match recipes and shopping lists to fit."
                 >
@@ -257,6 +263,7 @@ export default function OnboardingPage() {
 
               {step === 7 && (
                 <StepShell
+                  step={step}
                   title="A couple more details"
                   subtitle="Optional — helps us fine-tune portions and calories."
                 >
@@ -306,20 +313,10 @@ export default function OnboardingPage() {
               </button>
             </div>
           </div>
-
-          {/* Mobile-only fruit panel — flows naturally below the buttons */}
-          <div className="flex flex-col items-center gap-4 px-6 pb-16 pt-4 text-center lg:hidden">
-            <FruitCharacter step={step} className="h-56 w-56" />
-            <div>
-              <h2 className="font-robotoCondensed text-xl font-medium text-ink">{caption.title}</h2>
-              <p className="mt-1 max-w-xs text-sm text-inkMuted">{caption.subtitle}</p>
-            </div>
-            <StepDots step={step} totalSteps={TOTAL_STEPS} />
-          </div>
         </div>
 
         {/* Desktop-only fruit panel — fixed, never scrolls */}
-        <div className="hidden lg:flex lg:h-screen lg:flex-1 lg:flex-col lg:items-center lg:justify-center lg:gap-6 lg:bg-forest-light/30 lg:px-10">
+        <div className="hidden xl:flex xl:h-screen xl:flex-1 xl:flex-col xl:items-center xl:justify-center xl:gap-6 xl:bg-forest-light/30 xl:px-10">
           <FruitCharacter step={step} className="h-80 w-80" />
           <div className="text-center">
             <h2 className="font-robotoCondensed text-2xl font-medium text-ink">{caption.title}</h2>
@@ -348,18 +345,28 @@ function StepDots({ step, totalSteps }: { step: number; totalSteps: number }) {
 }
 
 function StepShell({
+  step,
   title,
   subtitle,
   children,
 }: {
+  step: number;
   title: string;
   subtitle: string;
   children: React.ReactNode;
 }) {
   return (
     <div>
-      <h1 className="font-robotoCondensed text-3xl font-medium text-ink md:text-4xl">{title}</h1>
-      <p className="mt-2 text-sm text-inkMuted">{subtitle}</p>
+      <div className="text-center xl:text-left">
+        <h1 className="font-robotoCondensed text-3xl font-medium text-ink md:text-4xl">{title}</h1>
+        <p className="mx-auto mt-2 max-w-sm text-sm text-inkMuted xl:mx-0 xl:max-w-none">{subtitle}</p>
+      </div>
+
+      {/* Centered fruit — mobile & tablet only; desktop shows its own fixed side panel */}
+      <div className="mt-6 flex justify-center xl:hidden">
+        <FruitCharacter step={step} className="h-36 w-36 sm:h-44 sm:w-44 md:h-52 md:w-52" />
+      </div>
+
       <div className="mt-8">{children}</div>
     </div>
   );

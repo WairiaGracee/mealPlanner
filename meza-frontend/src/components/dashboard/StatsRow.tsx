@@ -51,12 +51,14 @@ export default function StatsRow({ stats }: StatsRowProps) {
               </p>
             </div>
 
-            <p className="font-robotoCondensed text-3xl font-semibold leading-none sm:text-4xl" style={{ color: theme.value }}>
-              {stat.value}
-              <span className="ml-1 font-robotoCondensed text-sm font-normal" style={{ color: theme.fg }}>
+            <div className="flex flex-col gap-0.5">
+              <p className="font-robotoCondensed text-3xl font-semibold leading-none sm:text-4xl" style={{ color: theme.value }}>
+                {stat.value}
+              </p>
+              <p className="font-robotoCondensed text-xs font-normal sm:text-sm" style={{ color: theme.fg }}>
                 {stat.sub}
-              </span>
-            </p>
+              </p>
+            </div>
 
             {typeof stat.progressPct === "number" && (
               <div

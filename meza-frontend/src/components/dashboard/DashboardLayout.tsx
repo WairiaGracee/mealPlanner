@@ -28,6 +28,8 @@ import {
   IconBell,
   IconSearch,
   IconChevronDown,
+  IconMenu,
+  IconX,
 } from "./icons";
 
 interface DashboardLayoutProps {
@@ -113,6 +115,7 @@ export default function DashboardLayout({ userName, children }: DashboardLayoutP
   const [loggingOut, setLoggingOut] = useState(false);
   const [logoutError, setLogoutError] = useState<string | null>(null);
   const [showProfileDrawer, setShowProfileDrawer] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   function toggleSection(label: string) {
     setOpenSections((prev) => ({ ...prev, [label]: !prev[label] }));
@@ -141,6 +144,9 @@ export default function DashboardLayout({ userName, children }: DashboardLayoutP
   }
 
   function handleItemClick(item: NavItem) {
+    // Any nav action implies the user is done with the mobile drawer.
+    setMobileNavOpen(false);
+
     if (item.action === "logout") {
       handleLogout();
       return;
@@ -234,15 +240,18 @@ export default function DashboardLayout({ userName, children }: DashboardLayoutP
     );
   }
 
-  return (
-    <div className="themed-bg lg:flex lg:h-screen lg:overflow-hidden lg:gap-2 lg:p-2">
-      <aside className="hidden w-72 flex-shrink-0 flex-col rounded-r-2xl border-r border-line bg-paper py-7 shadow-[4px_0_16px_-4px_rgba(0,0,0,0.08)] lg:flex lg:h-screen">
+  function SidebarContent() {
+    return (
+      <>
         <button onClick={() => navigate("/")} className="px-7 text-left">
           <Logo className="h-10 w-auto" />
         </button>
 
         <button
-          onClick={() => navigate("/plan")}
+          onClick={() => {
+            setMobileNavOpen(false);
+            navigate("/plan");
+          }}
           className="mx-5 mt-6 flex items-center justify-center gap-2 rounded-xl bg-forest px-4 py-2.5 text-sm font-medium text-offwhite transition-colors hover:bg-forest-deep"
         >
           <IconPlus className="h-4 w-4" strokeWidth={2} />
@@ -255,11 +264,71 @@ export default function DashboardLayout({ userName, children }: DashboardLayoutP
             {renderPlainSection(ACCOUNT_SECTION)}
           </div>
         </nav>
+      </>
+    );
+  }
+
+  return (
+    <div className="themed-bg lg:flex lg:h-screen lg:overflow-hidden lg:gap-2 lg:p-2">
+      {/* Desktop sidebar */}
+      <aside className="hidden w-72 flex-shrink-0 flex-col rounded-r-2xl border-r border-line bg-paper py-7 shadow-[4px_0_16px_-4px_rgba(0,0,0,0.08)] lg:flex lg:h-screen">
+        <SidebarContent />
       </aside>
 
+      {/* Mobile / tablet nav drawer */}
+      {mobileNavOpen && (
+        <div className="fixed inset-0 z-50 flex lg:hidden">
+          <div
+            className="absolute inset-0 bg-charcoal/40"
+            onClick={() => setMobileNavOpen(false)}
+          />
+          <aside className="relative flex h-full w-72 max-w-[80vw] flex-shrink-0 flex-col bg-paper py-7 shadow-2xl">
+            <div className="flex items-center justify-between px-5">
+              <button onClick={() => navigate("/")} className="text-left">
+                <Logo className="h-10 w-auto" />
+              </button>
+              <button
+                onClick={() => setMobileNavOpen(false)}
+                aria-label={t("drawer_close")}
+                className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-ink/70 transition-colors hover:bg-forest-light"
+              >
+                <IconX className="h-4 w-4" />
+              </button>
+            </div>
+
+            <button
+              onClick={() => {
+                setMobileNavOpen(false);
+                navigate("/plan");
+              }}
+              className="mx-5 mt-6 flex items-center justify-center gap-2 rounded-xl bg-forest px-4 py-2.5 text-sm font-medium text-offwhite transition-colors hover:bg-forest-deep"
+            >
+              <IconPlus className="h-4 w-4" strokeWidth={2} />
+              {t("plan_a_meal")}
+            </button>
+
+            <nav className="scroll-on-hover mt-7 flex-1 overflow-y-auto px-5 pb-2">
+              <div className="flex flex-col gap-1">
+                {NAV_SECTIONS.map(renderSection)}
+                {renderPlainSection(ACCOUNT_SECTION)}
+              </div>
+            </nav>
+          </aside>
+        </div>
+      )}
+
       <div className="flex flex-1 flex-col lg:h-screen lg:overflow-hidden">
-        <header className="flex flex-shrink-0 items-center justify-between border-b border-line bg-paper px-6 py-4 lg:hidden">
-          <Logo className="h-9 w-auto" />
+        <header className="flex flex-shrink-0 items-center justify-between border-b border-line bg-paper px-4 py-4 sm:px-6 lg:hidden">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setMobileNavOpen(true)}
+              aria-label="Open navigation menu"
+              className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-ink/80 transition-colors hover:bg-forest-light"
+            >
+              <IconMenu className="h-5 w-5" />
+            </button>
+            <Logo className="h-9 w-auto" />
+          </div>
           <div className="flex items-center gap-4">
             <IconBell className="h-5 w-5 text-inkMuted" />
             <button

@@ -66,13 +66,22 @@ export default function Navbar() {
           >
             Get started
           </Button>
+          <button
+            onClick={() => setIsMenuOpen(true)}
+            aria-label="Open menu"
+            className="flex h-10 w-10 items-center justify-center rounded-full text-ink transition-colors hover:bg-ink/5 lg:hidden"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+              <path d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
         </div>
       </header>
 
       {/* spacer so fixed header doesn't overlap page content */}
       <div className="h-[88px] md:h-[104px]" />
 
-      {/* <SideNav isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} /> */}
+      <SideNav isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
     </>
   );
 }

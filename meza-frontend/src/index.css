@@ -162,10 +162,12 @@
 
   html {
     scroll-behavior: smooth;
+    overflow-x: hidden;
   }
 
   body {
     @apply bg-offwhite text-ink font-sans antialiased;
+    overflow-x: hidden;
     transition: background-color 0.2s ease, color 0.2s ease;
   }
 
