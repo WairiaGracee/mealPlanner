@@ -9,7 +9,7 @@ interface SideNavProps {
 }
 
 const NAV_ITEMS = [
-  { label: "Home", href: "#top" },
+  { label: "Home", href: "/" },
   { label: "Meals", href: "#dishes" },
   { label: "How it works", href: "#how-it-works" },
   { label: "Blog", href: "#blog" },

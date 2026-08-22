@@ -18,6 +18,9 @@ import NutritionPage from "./pages/NutritionPage";
 import RecipeQuizPage from "./pages/RecipeQuizPage";
 import SettingsPage from "./pages/SettingsPage";
 import OnboardingReminderModal from "./components/auth/OnboardingReminderModal";
+import AboutPage from "./pages/AboutPage";
+import RecipeGuidePage from "./pages/RecipeGuidePage";
+import GatherPage from "./pages/GatherPage";
 
 function App() {
   return (
@@ -29,6 +32,9 @@ function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/meal-plans" element={<SampleMealPlansPage />} />
           <Route path="/meal-plans/:slug" element={<MealPlanDetailPage />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/recipe-guide" element={<RecipeGuidePage />} />
+          <Route path="/gather" element={<GatherPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route

@@ -29,23 +29,30 @@ export default function Navbar() {
             : "bg-transparent py-6 shadow-none"
         }`}
       >
-        <a href="#top" aria-label="IntentionallyWell home">
+        <a     
+          href="/"
+          aria-label="IntentionallyWell home"
+          onClick={(e) => {
+            e.preventDefault();
+            navigate("/");
+          }}
+        >
           <Logo />
         </a>
 
         <nav className="hidden items-center gap-7 font-robotoCondensed text-sm uppercase tracking-[0.15em] text-ink/70 lg:flex">
-          <a href="#" className="transition-colors hover:text-forest">
+          <button onClick={() => navigate("/")} className="transition-colors hover:text-forest">
+            HOME
+          </button>
+          <button onClick={() => navigate("/about")} className="transition-colors hover:text-forest">
             ABOUT
-          </a>
-          <a href="#" className="transition-colors hover:text-forest">
+          </button>
+          <button onClick={() => navigate("/recipe-guide")} className="transition-colors hover:text-forest">
             RECIPES
-          </a>
-          <a href="#" className="transition-colors hover:text-forest">
+          </button>
+          <button onClick={() => navigate("/gather")} className="transition-colors hover:text-forest">
             GATHER
-          </a>
-          <a href="#" className="transition-colors hover:text-forest">
-            FOODGAMES
-          </a>
+          </button>
           <a href="#blog" className="transition-colors hover:text-forest">
             BLOGS
           </a>
