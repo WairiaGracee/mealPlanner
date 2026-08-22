@@ -21,6 +21,8 @@ import OnboardingReminderModal from "./components/auth/OnboardingReminderModal";
 import AboutPage from "./pages/AboutPage";
 import RecipeGuidePage from "./pages/RecipeGuidePage";
 import GatherPage from "./pages/GatherPage";
+import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
+import TermsPage from "./pages/TermsPage";
 
 function App() {
   return (
@@ -37,6 +39,8 @@ function App() {
           <Route path="/gather" element={<GatherPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/privacy" element={<PrivacyPolicyPage />} />
+          <Route path="/terms" element={<TermsPage />} />
           <Route
             path="/onboarding"
             element={

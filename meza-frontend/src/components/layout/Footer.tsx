@@ -26,6 +26,14 @@ export default function Footer() {
       <div className="flex flex-col gap-4 font-robotoCondensed text-sm text-offwhite/70 md:flex-row md:items-center md:justify-between">
         <span>Nyeri, Kenya</span>
         <span>New plans generated every week</span>
+        <div className="flex items-center gap-4">
+        <button onClick={() => navigate("/privacy")} className="underline-offset-2 hover:text-offwhite hover:underline">
+          Privacy Policy
+        </button>
+        <button onClick={() => navigate("/terms")} className="underline-offset-2 hover:text-offwhite hover:underline">
+          Terms
+        </button>
+      </div>
         <span>© {new Date().getFullYear()} IntentionallyWell</span>
       </div>
     </footer>
