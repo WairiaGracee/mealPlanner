@@ -159,6 +159,8 @@ export interface DayMeal {
   kcal: number;
   emoji: string;
   image?: string;
+  minutes?: number;
+  tag?: string;
 }
 
 export interface DayMealPlan {

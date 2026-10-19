@@ -94,6 +94,51 @@ export const translations = {
     language_title: "Language",
     language_subtitle: "Choose the language for your Meza dashboard.",
     language_more_coming: "More Kenyan languages are on the way.",
+
+        // Dashboard page
+    dashboard_loading: "Loading your dashboard…",
+    dashboard_no_plan_title: "No meal plan yet",
+    dashboard_no_plan_body: "Finish onboarding to get your first personalized week of Kenyan meals.",
+    dashboard_start_onboarding: "Start onboarding",
+    dashboard_daily_tip_generated: "Detailed nutrition and hydration tracking is coming soon — for now, this is your real generated plan.",
+
+    stat_calories_today: "Calories Today",
+    stat_calories_sub: "kcal from your plan",
+    stat_meals_planned: "Meals Planned",
+    stat_meals_planned_sub: "this week",
+    stat_shopping_items: "Shopping Items",
+    stat_shopping_items_sub: "in your list",
+    stat_recipes: "Recipes",
+    stat_recipes_sub: "generated for you",
+
+    mealplan_your_plan: "Your meal plan",
+    mealplan_this_week: "This week",
+    mealplan_today: "Today",
+    mealplan_add_snack: "Add snack",
+    mealplan_kcal: "kcal",
+    day_mon_full: "Monday",
+    day_tue_full: "Tuesday",
+    day_wed_full: "Wednesday",
+    day_thu_full: "Thursday",
+    day_fri_full: "Friday",
+    day_sat_full: "Saturday",
+    day_sun_full: "Sunday",
+
+    upcoming_meals_title: "Upcoming meals",
+    upcoming_meals_view_all: "View all",
+
+    daily_tip_title: "Daily tip",
+
+    recent_recipes_title: "Recently viewed recipes",
+    recent_recipes_view_all: "View all recipes →",
+    recent_recipes_min: "min",
+    recent_recipes_save: "Save recipe",
+
+    bottom_banner_headline: "Your plan. Your culture. Your health.",
+    bottom_banner_subtext: "Delicious Kenyan meals, personalized for you. Let's nourish your body, intentionally.",
+    bottom_banner_need_change: "Need a change?",
+    bottom_banner_update_body: "Update your preferences or swap meals anytime.",
+    bottom_banner_update_button: "Update preferences",
   },
   sw: {
     nav_menu: "Menyu",
@@ -178,6 +223,51 @@ export const translations = {
     language_title: "Lugha",
     language_subtitle: "Chagua lugha ya dashibodi yako ya Meza.",
     language_more_coming: "Lugha zaidi za Kikenya zinakuja hivi karibuni.",
+
+        // Dashboard page
+    dashboard_loading: "Inapakia dashibodi yako…",
+    dashboard_no_plan_title: "Bado hakuna mpango wa mlo",
+    dashboard_no_plan_body: "Maliza usajili ili upate wiki yako ya kwanza ya milo ya Kikenya iliyobinafsishwa.",
+    dashboard_start_onboarding: "Anza usajili",
+    dashboard_daily_tip_generated: "Ufuatiliaji wa kina wa lishe na maji unakuja hivi karibuni — kwa sasa, huu ni mpango wako halisi uliotengenezwa.",
+
+    stat_calories_today: "Kalori za Leo",
+    stat_calories_sub: "kcal kutoka mpango wako",
+    stat_meals_planned: "Milo Iliyopangwa",
+    stat_meals_planned_sub: "wiki hii",
+    stat_shopping_items: "Bidhaa za Ununuzi",
+    stat_shopping_items_sub: "kwenye orodha yako",
+    stat_recipes: "Mapishi",
+    stat_recipes_sub: "yaliyotengenezwa kwa ajili yako",
+
+    mealplan_your_plan: "Mpango wako wa mlo",
+    mealplan_this_week: "Wiki hii",
+    mealplan_today: "Leo",
+    mealplan_add_snack: "Ongeza kitafunwa",
+    mealplan_kcal: "kcal",
+    day_mon_full: "Jumatatu",
+    day_tue_full: "Jumanne",
+    day_wed_full: "Jumatano",
+    day_thu_full: "Alhamisi",
+    day_fri_full: "Ijumaa",
+    day_sat_full: "Jumamosi",
+    day_sun_full: "Jumapili",
+
+    upcoming_meals_title: "Milo Ijayo",
+    upcoming_meals_view_all: "Ona zote",
+
+    daily_tip_title: "Kidokezo cha Leo",
+
+    recent_recipes_title: "Mapishi Uliyoyaona Hivi Karibuni",
+    recent_recipes_view_all: "Ona mapishi yote →",
+    recent_recipes_min: "dak",
+    recent_recipes_save: "Hifadhi mapishi",
+
+    bottom_banner_headline: "Mpango wako. Utamaduni wako. Afya yako.",
+    bottom_banner_subtext: "Milo mitamu ya Kikenya, iliyobinafsishwa kwa ajili yako. Hebu tulishe mwili wako, kwa dhamira.",
+    bottom_banner_need_change: "Unahitaji mabadiliko?",
+    bottom_banner_update_body: "Sasisha mapendeleo yako au badilisha milo wakati wowote.",
+    bottom_banner_update_button: "Sasisha mapendeleo",
   },
 } as const;
 

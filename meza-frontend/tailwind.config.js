@@ -41,6 +41,17 @@ module.exports = {
         grain: "radial-gradient(circle at 1px 1px, rgba(239,232,218,0.06) 1px, transparent 0)",
         "fruit-pattern": "url('/patterns/fruit-pattern.svg')",
       },
+      keyframes: {
+        wobble: {
+          "0%, 100%": { transform: "translateY(0) rotate(-4deg)" },
+          "25%": { transform: "translateY(-8px) rotate(3deg)" },
+          "50%": { transform: "translateY(0) rotate(5deg) scale(1.02)" },
+          "75%": { transform: "translateY(-5px) rotate(-3deg)" },
+        },
+      },
+      animation: {
+        wobble: "wobble 3.2s ease-in-out infinite",
+      },
       backgroundSize: {
         grain: "18px 18px",
         "fruit-pattern": "280px 280px",

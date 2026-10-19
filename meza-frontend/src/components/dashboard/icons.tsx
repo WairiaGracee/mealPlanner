@@ -438,3 +438,20 @@ export function IconGift(props: IconProps) {
     </svg>
   );
 }
+
+export function IconMoon(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z" />
+    </svg>
+  );
+}
+
+export function IconUtensils(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M7 3v8M4.5 3v5a2.5 2.5 0 0 0 5 0V3M7 11v10" />
+      <path d="M17 21V3c-2.5 1.5-3.5 4.5-3.5 8H17" />
+    </svg>
+  );
+}

@@ -18,6 +18,11 @@ export interface Recipe {
   protein_g: number | null;
   carbs_g: number | null;
   fat_g: number | null;
+  fiber_g: number | null;
+  free_sugar_g: number | null;
+  sat_fat_g: number | null;
+  sodium_mg: number | null;
+  fruit_veg_g: number | null;
   prep_minutes: number | null;
   image_url: string;
   emoji: string;
@@ -42,6 +47,22 @@ export interface GroceryListItem {
   is_checked: boolean;
 }
 
+export interface WhoCheck {
+  key: string;
+  label: string;
+  unit: string;
+  min: number | null;
+  max: number | null;
+  weekly_avg: number | null;
+  status: "ok" | "over" | "under" | "no_data";
+  days_ok: number;
+  days_total: number;
+}
+
+export interface WeeklyNutrition {
+  calorie_goal: number;
+  checks: WhoCheck[];
+}
 export interface MealPlanDetail {
   id: string;
   status: MealPlanStatus["status"];
@@ -50,6 +71,7 @@ export interface MealPlanDetail {
   prompt: string;
   meals: PlannedMeal[];
   grocery_items: GroceryListItem[];
+  weekly_nutrition?: WeeklyNutrition;
   created_at: string;
 }
 

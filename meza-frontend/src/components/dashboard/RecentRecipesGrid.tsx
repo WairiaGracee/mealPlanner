@@ -1,16 +1,18 @@
 import type { RecipeSummary } from "../../types";
+import { usePreferences } from "../../context/PreferencesContext";
 
 interface RecentRecipesGridProps {
   recipes: RecipeSummary[];
 }
 
 export default function RecentRecipesGrid({ recipes }: RecentRecipesGridProps) {
+  const { t } = usePreferences();
   return (
     <div className="rounded-2xl border border-line bg-paper p-5 sm:p-6">
       <div className="flex items-center justify-between">
-        <h2 className="font-display text-xl text-ink">Recently viewed recipes</h2>
+        <h2 className="font-display text-xl text-ink">{t("recent_recipes_title")}</h2>
         <button className="text-sm font-medium text-forest hover:text-forest-deep">
-          View all recipes →
+          {t("recent_recipes_view_all")}
         </button>
       </div>
 
@@ -31,14 +33,14 @@ export default function RecentRecipesGrid({ recipes }: RecentRecipesGridProps) {
                 />
               )}
               <button
-                aria-label="Save recipe"
+                aria-label={t("recent_recipes_save")}
                 className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-paper/90 text-sm text-inkMuted transition-colors hover:text-forest"
               >
                 🔖
               </button>
             </div>
             <p className="mt-2 text-sm font-medium leading-snug text-ink">{recipe.name}</p>
-            <p className="text-xs text-inkMuted">{recipe.minutes} min</p>
+            <p className="text-xs text-inkMuted">{recipe.minutes} {t("recent_recipes_min")}</p>
           </div>
         ))}
       </div>

@@ -6,6 +6,7 @@ import { useAuth } from "../context/authContext";
 import { getActiveMealPlan, type MealPlanDetail } from "../lib/mealplans";
 import { ApiError } from "../lib/api";
 import { macrosForDay, getTodayDayOfWeek, type DayMacros } from "../lib/planTransforms";
+import WhoWeeklyCard from "../components/nutrition/WhoWeeklyCard";
 
 const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const MEAL_TYPE_ORDER: Record<string, number> = { breakfast: 0, lunch: 1, dinner: 2, snack: 3 };
@@ -129,6 +130,8 @@ export default function NutritionPage() {
             </div>
           </div>
         </div>
+
+        <WhoWeeklyCard data={plan.weekly_nutrition} />
 
         {/* Day pill nav */}
         <div className="flex items-center gap-1 overflow-x-auto rounded-full border border-line bg-paper px-2 py-1.5">

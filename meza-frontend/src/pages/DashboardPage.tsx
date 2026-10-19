@@ -1,28 +1,27 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "../components/dashboard/DashboardLayout";
-import StatsRow from "../components/dashboard/StatsRow";
+import DashboardGreeting from "../components/dashboard/DashboardGreeting";
+import NutritionHeroCard from "../components/dashboard/NutritionHeroCard";
+import FruitMascot from "../components/dashboard/FruitMascot";
+import QuickActionsCard from "../components/dashboard/QuickActionsCard";
+import WriteRecipeCard from "../components/dashboard/WriteRecipeCard";
 import MealPlanCard from "../components/dashboard/MealPlanCard";
-import UpcomingMealsCard from "../components/dashboard/UpcomingMealsCard";
-import DailyTipCard from "../components/dashboard/DailyTipCard";
-import RecentRecipesGrid from "../components/dashboard/RecentRecipesGrid";
-import BottomBanner from "../components/dashboard/BottomBanner";
+import GoalsCard from "../components/dashboard/GoalsCard";
+import ShoppingListStrip from "../components/dashboard/ShoppingListStrip";
+import QuoteCard from "../components/dashboard/QuoteCard";
+import Flourish from "../components/dashboard/Flourish";
 import { useAuth } from "../context/authContext";
-import { getActiveMealPlan, getRecipes, type MealPlanDetail } from "../lib/mealplans";
+import { usePreferences } from "../context/PreferencesContext";
+import { getActiveMealPlan, type MealPlanDetail } from "../lib/mealplans";
 import { ApiError } from "../lib/api";
-import {
-  buildDayMealPlans,
-  buildRecipeSummaries,
-  buildUpcomingMeals,
-  todaysCalories,
-} from "../lib/planTransforms";
-import type { RecipeSummary, StatCard } from "../types";
+import { buildDayMealPlans, getTodayDayOfWeek, macrosForDay } from "../lib/planTransforms";
 
 export default function DashboardPage() {
   const { user } = useAuth();
+  const { t } = usePreferences();
   const navigate = useNavigate();
   const [plan, setPlan] = useState<MealPlanDetail | null>(null);
-  const [recipes, setRecipes] = useState<RecipeSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [hasNoPlan, setHasNoPlan] = useState(false);
 
@@ -31,13 +30,9 @@ export default function DashboardPage() {
 
     async function load() {
       try {
-        const [activePlan, recipeList] = await Promise.all([
-          getActiveMealPlan(),
-          getRecipes(),
-        ]);
+        const activePlan = await getActiveMealPlan();
         if (cancelled) return;
         setPlan(activePlan);
-        setRecipes(buildRecipeSummaries(recipeList));
       } catch (err) {
         if (cancelled) return;
         if (err instanceof ApiError && err.status === 404) {
@@ -60,7 +55,7 @@ export default function DashboardPage() {
     return (
       <DashboardLayout userName={userName}>
         <div className="flex h-64 items-center justify-center text-sm text-inkMuted">
-          Loading your dashboard…
+          {t("dashboard_loading")}
         </div>
       </DashboardLayout>
     );
@@ -70,15 +65,13 @@ export default function DashboardPage() {
     return (
       <DashboardLayout userName={userName}>
         <div className="mx-auto flex max-w-md flex-col items-center gap-4 pt-24 text-center">
-          <h1 className="font-display text-2xl text-ink">No meal plan yet</h1>
-          <p className="text-sm text-inkMuted">
-            Finish onboarding to get your first personalized week of Kenyan meals.
-          </p>
+          <h1 className="font-display text-2xl text-ink">{t("dashboard_no_plan_title")}</h1>
+          <p className="text-sm text-inkMuted">{t("dashboard_no_plan_body")}</p>
           <button
             onClick={() => navigate("/onboarding")}
             className="rounded-full bg-forest px-6 py-2.5 text-sm font-medium text-offwhite transition-colors hover:bg-forest-deep"
           >
-            Start onboarding
+            {t("dashboard_start_onboarding")}
           </button>
         </div>
       </DashboardLayout>
@@ -86,43 +79,46 @@ export default function DashboardPage() {
   }
 
   const dayMealPlans = buildDayMealPlans(plan);
-  const upcomingMeals = buildUpcomingMeals(plan);
-  const distinctRecipeCount = new Set(plan.meals.map((m) => m.recipe.id)).size;
-
-  const statCards: StatCard[] = [
-    {
-      label: "Calories Today",
-      value: todaysCalories(plan).toLocaleString(),
-      sub: "kcal from your plan",
-      icon: "🔥",
-    },
-    { label: "Meals Planned", value: String(plan.meals.length), sub: "this week", icon: "📅" },
-    {
-      label: "Shopping Items",
-      value: String(plan.grocery_items.length),
-      sub: "in your list",
-      icon: "🛒",
-    },
-    { label: "Recipes", value: String(distinctRecipeCount), sub: "generated for you", icon: "📖" },
-  ];
+  const todayIdx = getTodayDayOfWeek(plan);
+  const today =
+    todayIdx === null
+      ? { kcal: 0, protein: 0, carbs: 0, fat: 0 }
+      : macrosForDay(plan, todayIdx);
+  const target = plan.weekly_nutrition?.calorie_goal || 2000;
 
   return (
     <DashboardLayout userName={userName}>
-      <div className="mx-auto flex max-w-7xl flex-col gap-5 pt-6 sm:pt-8">
-        <StatsRow stats={statCards} />
+      <div className="mx-auto flex max-w-7xl flex-col gap-5 pt-0">
+        <DashboardGreeting userName={userName} />
 
-        <div className="grid grid-cols-1 gap-5 xl:grid-cols-[1.6fr_1fr]">
-          <MealPlanCard week={dayMealPlans} />
-
+        <div className="grid grid-cols-1 gap-5 xl:grid-cols-[1.5fr_auto_1fr]">
+          <NutritionHeroCard
+            kcal={today.kcal}
+            target={target}
+            protein={today.protein}
+            carbs={today.carbs}
+            fat={today.fat}
+          />
+          <FruitMascot />
           <div className="flex flex-col gap-5">
-            <UpcomingMealsCard meals={upcomingMeals} />
-            <DailyTipCard tip="Detailed nutrition and hydration tracking is coming soon — for now, this is your real generated plan." />
+            <QuickActionsCard />
+            <WriteRecipeCard />
+          </div>
+
+          <div className="xl:col-span-2">
+            <MealPlanCard week={dayMealPlans} />
+          </div>
+          <GoalsCard />
+
+          <div className="xl:col-span-2">
+            <ShoppingListStrip count={plan.grocery_items.length} />
+          </div>
+          <QuoteCard />
+
+          <div className="xl:col-span-3">
+            <Flourish name={userName} />
           </div>
         </div>
-
-        <RecentRecipesGrid recipes={recipes} />
-
-        <BottomBanner />
       </div>
     </DashboardLayout>
   );

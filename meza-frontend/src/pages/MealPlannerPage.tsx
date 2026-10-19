@@ -4,7 +4,6 @@ import DashboardLayout from "../components/dashboard/DashboardLayout";
 import ExportMenu from "../components/export/ExportMenu";
 import MealPlanExportCard from "../components/export/MealPlanExportCard";
 import {
-  IconBasket,
   IconCalendar,
   IconChevronDown,
   IconChevronLeft,
@@ -13,8 +12,9 @@ import {
   IconLeaf,
   IconPencil,
   IconRefresh,
-  IconSun,
 } from "../components/dashboard/icons";
+import { IconForkSpoon } from "../components/dashboard/extraicons";
+import { ACCENT } from "../components/dashboard/accents";
 import { useAuth } from "../context/authContext";
 import { ApiError } from "../lib/api";
 import {
@@ -25,7 +25,61 @@ import {
   type MealPlanDetail,
 } from "../lib/mealplans";
 import { buildDayMealPlans, formatWeekRange, getTodayDayOfWeek } from "../lib/planTransforms";
-import type { DayMealPlan } from "../types";
+import type { DayMeal, DayMealPlan } from "../types";
+
+/* ---------- small helpers ---------- */
+
+const SLOT_ACCENT = {
+  breakfast: ACCENT.rose,
+  lunch: ACCENT.peach,
+  dinner: ACCENT.lavender,
+  snack: ACCENT.sage,
+} as const;
+
+function slotAccent(slot: string) {
+  return SLOT_ACCENT[slot as keyof typeof SLOT_ACCENT] ?? ACCENT.sage;
+}
+
+function prettyTag(tag?: string): string | null {
+  if (!tag) return null;
+  const s = tag.replace(/[-_]+/g, " ").trim().toLowerCase();
+  return s ? s.charAt(0).toUpperCase() + s.slice(1) : null;
+}
+
+function tagAccent(tag: string) {
+  const k = tag.toLowerCase();
+  if (k.includes("protein")) return ACCENT.rose;
+  if (k.includes("fib")) return ACCENT.sage;
+  if (k.includes("iron") || k.includes("energy")) return ACCENT.peach;
+  return ACCENT.lavender;
+}
+
+/** The tag most of the day's meals share (ties go to the earliest meal). */
+function dayTag(day: DayMealPlan): string | null {
+  const counts = new Map<string, number>();
+  for (const m of day.meals) {
+    const t = prettyTag(m.tag);
+    if (t) counts.set(t, (counts.get(t) ?? 0) + 1);
+  }
+  let best: string | null = null;
+  let bestCount = 0;
+  counts.forEach((count, tag) => {
+    if (count > bestCount) {
+      best = tag;
+      bestCount = count;
+    }
+  });
+  return best;
+}
+
+function daysIntoWeek(weekStartDate: string): number {
+  const [y, m, d] = weekStartDate.split("-").map(Number);
+  const start = new Date(y, m - 1, d);
+  const diff = Math.floor((Date.now() - start.getTime()) / 86_400_000);
+  return Math.max(0, Math.min(7, diff + 1));
+}
+
+/* ---------- page ---------- */
 
 export default function MealPlannerPage() {
   const { user } = useAuth();
@@ -133,55 +187,53 @@ export default function MealPlannerPage() {
   const daysPlanned = week.filter((d) => d.meals.length > 0).length;
   const totalMeals = plan.meals.length;
   const weekRange = formatWeekRange(plan);
+  const daysIn = daysIntoWeek(plan.week_start_date);
 
   return (
     <DashboardLayout userName={userName}>
-      <div className="mx-auto flex max-w-6xl flex-col gap-6 pt-6 sm:pt-8">
+      <div className="mx-auto flex max-w-6xl flex-col gap-5 pt-0">
         {/* Header */}
         <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-          <div>
-            <h1 className="font-display text-3xl text-ink">Your meal plan</h1>
+          <div className="lg:pt-2">
+            <h1 className="font-display text-3xl text-ink sm:text-4xl">Your meal plan</h1>
             <p className="mt-1 text-sm text-inkMuted">
               Delicious Kenyan meals, planned just for you.
             </p>
-            <div className="mt-2 h-[3px] w-14 rounded-full bg-clay" />
+            <div className="mt-4 flex items-center gap-3">
+              <div className="h-1.5 w-48 overflow-hidden rounded-full bg-forest-light">
+                <div
+                  className="h-full rounded-full bg-forest transition-all duration-700"
+                  style={{ width: `${(daysIn / 7) * 100}%` }}
+                />
+              </div>
+              <span className="text-xs text-inkMuted">{daysIn} of 7 days</span>
+            </div>
           </div>
 
-          <div className="flex flex-wrap items-stretch gap-3">
-            <div className="flex items-center divide-x divide-line rounded-2xl border border-line bg-paper px-5 py-3">
-              <div className="pr-5 text-center">
-                <p className="font-display text-xl text-ink">{daysPlanned}</p>
-                <p className="text-[11px] text-inkMuted">Days planned</p>
-              </div>
-              <div className="px-5 text-center">
-                <p className="font-display text-xl text-ink">{totalMeals}</p>
-                <p className="text-[11px] text-inkMuted">Meals</p>
-              </div>
-              <div className="pl-5 text-center">
-                <p className="font-display text-xl text-ink">{nutritionGoal}</p>
-                <p className="flex items-center justify-center gap-1 text-[11px] text-inkMuted">
-                  <IconLeaf className="h-3 w-3 text-forest" />
-                  Nutrition goal
-                </p>
-              </div>
+          <div className="flex w-full flex-col gap-3 lg:max-w-[460px]">
+            <div className="grid grid-cols-3 gap-3">
+              <StatCard icon={<IconCalendar className="h-5 w-5" />} value={String(daysPlanned)} label="Days planned" />
+              <StatCard icon={<IconForkSpoon className="h-5 w-5" />} value={String(totalMeals)} label="Meals" />
+              <StatCard icon={<IconLeaf className="h-5 w-5" />} value={nutritionGoal} label="Nutrition goal" />
             </div>
 
-            <div className="flex max-w-xs items-center gap-3 rounded-2xl border border-line bg-forest-light/50 px-4 py-3">
-              <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-forest/10 text-forest">
-                <IconBasket className="h-5 w-5" />
+            <button
+              onClick={() => navigate("/recipes")}
+              className="flex items-center gap-3 rounded-2xl border border-line bg-forest-light/60 px-4 py-3 text-left transition-colors hover:bg-forest-light"
+            >
+              <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-paper text-forest">
+                <IconHeart className="h-4 w-4" />
               </span>
-              <p className="text-xs text-ink">
-                <strong className="font-robotoCondensed font-medium">
-                  Fresh. Local. Nourishing.
-                </strong>
-                <br />
+              <p className="flex-1 text-xs text-inkMuted">
+                <strong className="block text-sm font-medium text-ink">Fresh, local, nourishing.</strong>
                 Meals crafted with wholesome ingredients you'll love.
               </p>
-            </div>
+              <IconChevronRight className="h-4 w-4 flex-shrink-0 text-inkMuted" />
+            </button>
           </div>
         </div>
 
-        {/* Week nav + edit */}
+        {/* Week nav + actions */}
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-1 rounded-full border border-line bg-paper px-2 py-1.5">
             <button
@@ -204,15 +256,16 @@ export default function MealPlannerPage() {
             </button>
           </div>
 
-          <button
-            onClick={() => navigate("/onboarding")}
-            className="flex items-center gap-2 rounded-full border border-line bg-paper px-4 py-2 text-sm font-medium text-ink transition-colors hover:bg-forest-light"
-          >
-            <IconPencil className="h-4 w-4" />
-            Edit plan
-          </button>
-
-          <ExportMenu targetRef={exportRef} filename={`meza-meal-plan-${plan.week_start_date}`} />
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigate("/onboarding")}
+              className="flex items-center gap-2 rounded-full border border-line bg-paper px-4 py-2 text-sm font-medium text-ink transition-colors hover:bg-forest-light"
+            >
+              <IconPencil className="h-4 w-4" />
+              Edit plan
+            </button>
+            <ExportMenu solid targetRef={exportRef} filename={`meza-meal-plan-${plan.week_start_date}`} />
+          </div>
         </div>
 
         {/* Week list */}
@@ -230,10 +283,10 @@ export default function MealPlannerPage() {
         </div>
 
         {/* Footer note */}
-        <div className="flex flex-col items-start justify-between gap-3 rounded-2xl border border-line bg-forest-light/40 px-5 py-4 sm:flex-row sm:items-center">
-          <p className="flex items-center gap-2 text-sm text-ink">
+        <div className="flex flex-col items-start justify-between gap-3 rounded-2xl border border-line bg-forest-light/50 px-5 py-3 sm:flex-row sm:items-center">
+          <p className="flex items-center gap-2 text-xs text-inkMuted sm:text-sm">
             <IconLeaf className="h-4 w-4 flex-shrink-0 text-forest" />
-            All meals are generated based on your goals, preferences, and available ingredients.
+            Meals are planned around your goals, preferences, and available ingredients.
           </p>
           <button
             onClick={handleRegenerate}
@@ -251,6 +304,45 @@ export default function MealPlannerPage() {
   );
 }
 
+/* ---------- pieces ---------- */
+
+function StatCard({ icon, value, label }: { icon: React.ReactNode; value: string; label: string }) {
+  return (
+    <div className="flex items-center gap-3 rounded-2xl border border-line bg-paper px-4 py-3">
+      <span className="flex-shrink-0 text-forest">{icon}</span>
+      <div className="min-w-0">
+        <p className="truncate font-display text-lg font-semibold leading-tight text-ink">{value}</p>
+        <p className="truncate text-[11px] text-inkMuted">{label}</p>
+      </div>
+    </div>
+  );
+}
+
+function TagPill({ tag }: { tag: string }) {
+  const a = tagAccent(tag);
+  return (
+    <span
+      className="inline-block whitespace-nowrap rounded-full px-2.5 py-0.5 text-[11px] font-medium"
+      style={{ backgroundColor: a.bg, color: a.ink }}
+    >
+      {tag}
+    </span>
+  );
+}
+
+function MealLetter({ meal }: { meal: DayMeal }) {
+  const a = slotAccent(meal.slot);
+  return (
+    <span
+      aria-hidden="true"
+      className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full font-display text-base font-semibold"
+      style={{ backgroundColor: a.bg, color: a.ink }}
+    >
+      {meal.label.charAt(0)}
+    </span>
+  );
+}
+
 function DayRow({
   day,
   expanded,
@@ -264,98 +356,91 @@ function DayRow({
   favorited: Set<string>;
   onToggleFavorite: (key: string) => void;
 }) {
-  const slots: Array<{ slot: string; label: string }> = [
-    { slot: "breakfast", label: "Breakfast" },
-    { slot: "lunch", label: "Lunch" },
-    { slot: "dinner", label: "Dinner" },
-  ];
+  const tag = dayTag(day);
 
   return (
     <div
       className={`overflow-hidden rounded-2xl border transition-colors ${
-        day.isToday ? "border-forest bg-forest-light/30" : "border-line bg-paper"
-      }`}
+        expanded ? "border-line bg-forest-light/40" : "border-line bg-paper hover:bg-forest-light/20"
+      } ${day.isToday ? "ring-1 ring-forest/30" : ""}`}
     >
-      <button
-        onClick={onToggle}
-        className="flex w-full items-center gap-4 px-4 py-3.5 text-left sm:px-5"
-      >
-        <span className="flex w-16 flex-shrink-0 items-center gap-2 sm:w-20">
-          {day.isToday && <IconSun className="h-4 w-4 flex-shrink-0 text-clay" />}
-          <span>
-            <span className="block font-display text-base text-ink">{day.day}</span>
-            <span className="block text-[11px] uppercase tracking-[0.06em] text-inkMuted">
-              {day.date}
-            </span>
-          </span>
+      <button onClick={onToggle} className="flex w-full items-center gap-4 px-4 py-3.5 text-left sm:px-5">
+        <span className="block w-14 flex-shrink-0 sm:w-16">
+          <span className="block font-display text-lg leading-tight text-ink">{day.day}</span>
+          <span className="block text-[11px] uppercase tracking-[0.06em] text-inkMuted">{day.date}</span>
         </span>
 
-        {!expanded && (
-          <div className="hidden flex-1 items-center gap-6 sm:flex">
+        {expanded ? (
+          <>
+            <span className="hidden h-8 w-px bg-line sm:block" />
+            {tag && <TagPill tag={tag} />}
+          </>
+        ) : (
+          <div className="hidden flex-1 items-stretch sm:flex">
             {day.meals.length === 0 ? (
               <span className="text-sm text-inkMuted">No meals planned</span>
             ) : (
-              day.meals.map((meal) => (
-                <div key={meal.slot} className="flex flex-1 items-center gap-3">
-                  <MealThumb meal={meal} />
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-medium text-ink">{meal.name}</p>
-                    <p className="text-xs text-inkMuted">{meal.kcal} kcal</p>
-                  </div>
+              day.meals.map((meal, i) => (
+                <div
+                  key={meal.slot}
+                  className={`min-w-0 flex-1 ${i > 0 ? "ml-4 border-l border-line pl-4" : ""}`}
+                >
+                  <p className="truncate text-xs font-medium text-ink">{meal.name}</p>
+                  <p className="text-[11px] text-inkMuted">{meal.kcal} kcal</p>
                 </div>
               ))
             )}
           </div>
         )}
 
-        <span className="ml-auto flex flex-shrink-0 items-center gap-1">
+        <span className="ml-auto flex flex-shrink-0 items-center gap-3">
+          {!expanded && tag && <TagPill tag={tag} />}
           {!expanded && (
             <span className="text-xs text-inkMuted sm:hidden">
               {day.meals.length} meal{day.meals.length === 1 ? "" : "s"}
             </span>
           )}
-          <IconChevronDown
-            className={`h-4 w-4 text-inkMuted transition-transform duration-200 ${
-              expanded ? "rotate-180" : ""
-            }`}
-          />
+          {expanded ? (
+            <IconChevronDown className="h-4 w-4 rotate-180 text-inkMuted" />
+          ) : (
+            <IconChevronRight className="h-4 w-4 text-inkMuted" />
+          )}
         </span>
       </button>
 
       {expanded && (
-        <div className="border-t border-line/70 px-4 pb-4 pt-1 sm:px-5">
+        <div className="px-4 pb-4 sm:px-5">
           {day.meals.length === 0 ? (
             <p className="py-3 text-sm text-inkMuted">No meals planned for this day.</p>
           ) : (
-            <div className="grid grid-cols-1 gap-3 pt-3 sm:grid-cols-3">
-              {slots.map(({ slot, label }) => {
-                const meal = day.meals.find((m) => m.slot === slot);
-                if (!meal) return null;
-                const key = `${day.day}-${slot}`;
+            <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
+              {day.meals.map((meal) => {
+                const key = `${day.day}-${meal.slot}`;
                 const isFav = favorited.has(key);
+                const mealTag = prettyTag(meal.tag);
                 return (
                   <div
-                    key={slot}
-                    className="flex items-start gap-3 rounded-xl border border-line/70 bg-paper p-3"
+                    key={meal.slot}
+                    className="relative flex gap-3 rounded-xl border border-line bg-paper p-4"
                   >
-                    <MealThumb meal={meal} size="lg" />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-[10px] font-medium uppercase tracking-[0.1em] text-forest">
-                        {label}
+                    <MealLetter meal={meal} />
+                    <div className="flex min-w-0 flex-1 flex-col pr-5">
+                      <p className="text-[10px] font-medium uppercase tracking-[0.12em] text-inkMuted">
+                        {meal.label}
                       </p>
-                      <p className="mt-0.5 text-sm font-medium leading-snug text-ink">
-                        {meal.name}
-                      </p>
-                      <p className="mt-0.5 text-xs text-inkMuted">
+                      <p className="mt-1 text-sm font-medium leading-snug text-ink">{meal.name}</p>
+                      {mealTag && (
+                        <div className="mt-2">
+                          <TagPill tag={mealTag} />
+                        </div>
+                      )}
+                      <p className="mt-3 text-xs text-inkMuted">
                         {meal.kcal} kcal · {meal.time}
                       </p>
                     </div>
                     <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onToggleFavorite(key);
-                      }}
-                      className={`flex-shrink-0 transition-colors ${
+                      onClick={() => onToggleFavorite(key)}
+                      className={`absolute right-3 top-3 transition-colors ${
                         isFav ? "text-clay" : "text-inkMuted hover:text-clay"
                       }`}
                       aria-label="Favorite this meal"
@@ -368,27 +453,6 @@ function DayRow({
             </div>
           )}
         </div>
-      )}
-    </div>
-  );
-}
-
-function MealThumb({
-  meal,
-  size = "sm",
-}: {
-  meal: DayMealPlan["meals"][number];
-  size?: "sm" | "lg";
-}) {
-  const dims = size === "lg" ? "h-16 w-16" : "h-11 w-11";
-  return (
-    <div
-      className={`flex ${dims} flex-shrink-0 items-center justify-center overflow-hidden rounded-xl bg-forest-light text-xl`}
-    >
-      {meal.image ? (
-        <img src={meal.image} alt={meal.name} className="h-full w-full object-cover" />
-      ) : (
-        meal.emoji
       )}
     </div>
   );

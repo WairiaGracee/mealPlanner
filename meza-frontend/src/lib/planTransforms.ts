@@ -65,6 +65,8 @@ export function buildDayMealPlans(detail: MealPlanDetail): DayMealPlan[] {
         kcal: m.recipe.calories ?? 0,
         emoji: m.recipe.emoji || FALLBACK_EMOJI,
         image: m.recipe.image_url || undefined,
+        minutes: m.recipe.prep_minutes ?? undefined,
+        tag: m.recipe.tags?.[0] || undefined,
       }));
 
     return {

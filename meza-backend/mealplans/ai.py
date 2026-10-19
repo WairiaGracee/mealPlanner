@@ -1,4 +1,5 @@
 import json
+import re
 import logging
 import time
 
@@ -8,12 +9,14 @@ from google import genai
 from google.genai.errors import ServerError
 
 from .models import GroceryListItem, MealPlan, PlannedMeal, Recipe
+from .who_guidelines import build_prompt_block, build_targets, find_issues
 
 logger = logging.getLogger(__name__)
 
 MODEL_NAME = "gemini-3.5-flash"
 MAX_RETRIES = 3
 RETRY_DELAY_SECONDS = 5
+MAX_WHO_REPAIRS = 1  # extra generations allowed to fix WHO violations
 
 PEXELS_SEARCH_URL = "https://api.pexels.com/v1/search"
 IMAGE_FETCH_TIMEOUT_SECONDS = 4
@@ -44,12 +47,19 @@ RESPONSE_SCHEMA = {
                                     "description": "One emoji that best represents this dish",
                                 },
                                 "name": {"type": "string"},
+                                "image_query": {"type": "string"},
+                                "image_query_fallback": {"type": "string"},
                                 "region": {"type": "string"},
                                 "description": {"type": "string"},
                                 "calories": {"type": "integer"},
                                 "protein_g": {"type": "number"},
                                 "carbs_g": {"type": "number"},
                                 "fat_g": {"type": "number"},
+                                "fiber_g": {"type": "number"},
+                                "free_sugar_g": {"type": "number"},
+                                "sat_fat_g": {"type": "number"},
+                                "sodium_mg": {"type": "number"},
+                                "fruit_veg_g": {"type": "number"},
                                 "prep_minutes": {"type": "integer"},
                                 "ingredients": {
                                     "type": "array",
@@ -64,9 +74,16 @@ RESPONSE_SCHEMA = {
                                     },
                                 },
                                 "steps": {"type": "array", "items": {"type": "string"}},
+                                "image_query": {"type": "string"},
+                                "image_query_fallback": {"type": "string"},
                                 "tags": {"type": "array", "items": {"type": "string"}},
                             },
-                            "required": ["meal_type", "name", "ingredients", "steps"],
+                            "required": [
+                                "meal_type", "name", "ingredients", "steps",
+                                "calories", "protein_g", "carbs_g", "fat_g",
+                                "fiber_g", "free_sugar_g", "sat_fat_g",
+                                "sodium_mg", "fruit_veg_g",
+                            ],
                         },
                     },
                 },
@@ -127,13 +144,49 @@ def _build_prompt(profile) -> str:
         "- Vary the meals across the week; don't repeat the same dish twice.",
         "- Keep prep time realistic for the stated time budget.",
         "- For each meal, include a single emoji that best represents that specific dish.",
+        "- For each meal, give image_query: 3-5 plain English words describing how the finished "
+        "dish LOOKS, as a stock-photo site would tag it (for example 'vegetable omelette brown "
+        "toast' or 'beef stew with rice'). Use NO Swahili or local dish names. Also give "
+        "image_query_fallback: just the single most visible food in the dish (for example "
+        "'omelette' or 'beef stew').",
         "- After listing all meals, compile ONE consolidated grocery list covering every "
         "ingredient needed for the whole week — merge duplicate ingredients into a single "
         "line with a combined quantity, grouped by category.",
         "- For each meal, estimate protein_g, carbs_g, and fat_g (grams) alongside calories — "
         "reasonable estimates based on standard portion sizes and typical recipe composition.",
     ]
+    lines += build_prompt_block(profile)
     return "\n".join(lines)
+
+
+def _call_gemini(client, prompt: str) -> dict:
+    last_error = None
+    for attempt in range(1, MAX_RETRIES + 1):
+        try:
+            response = client.models.generate_content(
+                model=MODEL_NAME,
+                contents=prompt,
+                config={
+                    "response_mime_type": "application/json",
+                    "response_schema": RESPONSE_SCHEMA,
+                },
+            )
+            return json.loads(response.text)
+        except ServerError as exc:
+            # 503/500-class errors are usually transient overload on
+            # Google's side — worth a short retry before giving up.
+            last_error = exc
+            if attempt < MAX_RETRIES:
+                time.sleep(RETRY_DELAY_SECONDS)
+    raise last_error
+
+
+def _flatten_meals(payload: dict) -> list:
+    return [
+        {"day_of_week": day["day_of_week"], **meal}
+        for day in payload.get("days", [])
+        for meal in day.get("meals", [])
+    ]
 
 
 def generate_meal_plan_sync(meal_plan: MealPlan) -> None:
@@ -146,31 +199,24 @@ def generate_meal_plan_sync(meal_plan: MealPlan) -> None:
         meal_plan.save(update_fields=["status", "prompt"])
 
         client = genai.Client(api_key=settings.GEMINI_API_KEY)
+        payload = _call_gemini(client, prompt)
 
-        response = None
-        last_error = None
-        for attempt in range(1, MAX_RETRIES + 1):
-            try:
-                response = client.models.generate_content(
-                    model=MODEL_NAME,
-                    contents=prompt,
-                    config={
-                        "response_mime_type": "application/json",
-                        "response_schema": RESPONSE_SCHEMA,
-                    },
-                )
+        # The model's numbers drift, so check the draft against the WHO
+        # targets and ask for a corrected plan if any day breaks them.
+        targets = build_targets(profile)
+        for _ in range(MAX_WHO_REPAIRS):
+            issues = find_issues(_flatten_meals(payload), targets)
+            if not issues:
                 break
-            except ServerError as exc:
-                # 503/500-class errors are usually transient overload on
-                # Google's side — worth a short retry before giving up.
-                last_error = exc
-                if attempt < MAX_RETRIES:
-                    time.sleep(RETRY_DELAY_SECONDS)
+            fix_prompt = (
+                prompt
+                + "\n\nYour previous draft broke these WHO limits. Fix them by changing "
+                "the dishes or ingredients (not just the numbers) and return the COMPLETE "
+                "plan and grocery list again:\n"
+                + "\n".join(f"- {i}" for i in issues)
+            )
+            payload = _call_gemini(client, fix_prompt)
 
-        if response is None:
-            raise last_error
-
-        payload = json.loads(response.text)
         _save_generated_plan(meal_plan, payload)
 
         meal_plan.status = MealPlan.Status.READY
@@ -180,23 +226,62 @@ def generate_meal_plan_sync(meal_plan: MealPlan) -> None:
         meal_plan.error_message = str(exc)[:500]
         meal_plan.save(update_fields=["status", "error_message"])
 
+IMAGE_STOPWORDS = {"with", "and", "the", "for", "served", "fresh", "plate", "bowl"}
+IMAGE_PEOPLE_WORDS = {"person", "people", "man", "woman", "hand", "hands", "holding", "girl", "boy", "child"}
 
-def _fetch_recipe_image_url(dish_name: str, region: str, image_cache: dict) -> str:
+
+def _norm_word(word: str) -> str:
+    return word[:-1] if len(word) > 3 and word.endswith("s") else word
+
+
+def _search_pexels(query: str, used_ids: set):
+    """Return (photo_id, url) for the best photo whose alt text matches the
+    query, or None. Better no photo (the UI shows the emoji) than a wrong one."""
+    tokens = {
+        _norm_word(w)
+        for w in re.findall(r"[a-z]+", query.lower())
+        if len(w) > 2 and w not in IMAGE_STOPWORDS
+    }
+    if not tokens:
+        return None
+    needed = 1 if len(tokens) == 1 else 2
+
+    response = requests.get(
+        PEXELS_SEARCH_URL,
+        headers={"Authorization": settings.PEXELS_API_KEY},
+        params={"query": query, "per_page": 15, "orientation": "square"},
+        timeout=IMAGE_FETCH_TIMEOUT_SECONDS,
+    )
+    response.raise_for_status()
+
+    best, best_key = None, None
+    for photo in response.json().get("photos", []):
+        if photo["id"] in used_ids:
+            continue  # don't reuse one photo for two different dishes
+        alt_words = {_norm_word(w) for w in re.findall(r"[a-z]+", (photo.get("alt") or "").lower())}
+        hits = len(tokens & alt_words)
+        if hits < needed:
+            continue
+        has_people = bool(alt_words & IMAGE_PEOPLE_WORDS)
+        key = (hits, not has_people)  # prefer more matches, then photos without people
+        if best_key is None or key > best_key:
+            best, best_key = photo, key
+    if best is None:
+        return None
+    return best["id"], best["src"]["medium"]
+
+
+def _fetch_recipe_image_url(meal: dict, image_cache: dict) -> str:
     """
-    Look up a photo that matches the generated dish, via Pexels.
+    Find a photo that matches the generated dish, via Pexels.
 
-    Order of preference:
-      1. An in-memory cache for this generation run (same dish appears twice).
-      2. A previously generated Recipe with the same name that already has
-         an image — avoids re-querying Pexels for common Kenyan staples
-         that show up across many users' plans.
-      3. A live Pexels search, scoped with "Kenyan food" so results match
-         the actual cuisine rather than a generic/Western interpretation
-         of the dish name.
-
-    Returns "" (never raises) if nothing is found or the API isn't
-    configured — the frontend already falls back to the dish emoji.
+    Local dish names (kamande, omena, kunde...) don't exist in stock-photo
+    tags, so we search with the plain-English image_query the model wrote for
+    each meal, then its single-food fallback. Results are only accepted if
+    the photo's alt text actually matches. Returns "" (never raises) when
+    nothing matches, and the frontend falls back to the dish emoji.
     """
+    dish_name = meal["name"]
     cache_key = dish_name.strip().lower()
     if cache_key in image_cache:
         return image_cache[cache_key]
@@ -216,23 +301,27 @@ def _fetch_recipe_image_url(dish_name: str, region: str, image_cache: dict) -> s
         image_cache[cache_key] = ""
         return ""
 
-    query = f"{dish_name} {region} Kenyan food".strip()
-    try:
-        response = requests.get(
-            PEXELS_SEARCH_URL,
-            headers={"Authorization": settings.PEXELS_API_KEY},
-            params={"query": query, "per_page": 1, "orientation": "square"},
-            timeout=IMAGE_FETCH_TIMEOUT_SECONDS,
-        )
-        response.raise_for_status()
-        photos = response.json().get("photos", [])
-        image_url = photos[0]["src"]["medium"] if photos else ""
-    except (requests.RequestException, KeyError, ValueError) as exc:
-        logger.warning("Pexels image lookup failed for %r: %s", dish_name, exc)
-        image_url = ""
+    queries = [
+        q.strip()
+        for q in (meal.get("image_query"), meal.get("image_query_fallback"))
+        if q and q.strip()
+    ] or [dish_name]
 
-    image_cache[cache_key] = image_url
-    return image_url
+    used_ids = image_cache.setdefault("__used_ids__", set())
+    for query in queries:
+        try:
+            found = _search_pexels(query, used_ids)
+        except (requests.RequestException, KeyError, ValueError) as exc:
+            logger.warning("Pexels image lookup failed for %r: %s", query, exc)
+            continue
+        if found:
+            photo_id, image_url = found
+            used_ids.add(photo_id)
+            image_cache[cache_key] = image_url
+            return image_url
+
+    image_cache[cache_key] = ""
+    return ""
 
 
 def _save_generated_plan(meal_plan: MealPlan, payload: dict) -> None:
@@ -241,9 +330,7 @@ def _save_generated_plan(meal_plan: MealPlan, payload: dict) -> None:
     for day in payload.get("days", []):
         day_of_week = day["day_of_week"]
         for meal in day.get("meals", []):
-            image_url = _fetch_recipe_image_url(
-                meal["name"], meal.get("region", ""), image_cache
-            )
+            image_url = _fetch_recipe_image_url(meal, image_cache)
             recipe = Recipe.objects.create(
                 name=meal["name"],
                 region=meal.get("region", ""),
@@ -252,6 +339,11 @@ def _save_generated_plan(meal_plan: MealPlan, payload: dict) -> None:
                 protein_g=meal.get("protein_g"),
                 carbs_g=meal.get("carbs_g"),
                 fat_g=meal.get("fat_g"),
+                fiber_g=meal.get("fiber_g"),
+                free_sugar_g=meal.get("free_sugar_g"),
+                sat_fat_g=meal.get("sat_fat_g"),
+                sodium_mg=meal.get("sodium_mg"),
+                fruit_veg_g=meal.get("fruit_veg_g"),
                 prep_minutes=meal.get("prep_minutes"),
                 emoji=meal.get("emoji", ""),
                 image_url=image_url,

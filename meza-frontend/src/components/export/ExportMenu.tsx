@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { IconChevronDown, IconDownload } from "../dashboard/icons";
+import { IconChevronDown, IconDownload, IconMoreVertical } from "../dashboard/icons";
 import { exportNodeAsImage, exportNodeAsPdf } from "../../lib/ExportToFile";
 
 interface ExportMenuProps {
@@ -9,6 +9,10 @@ interface ExportMenuProps {
   filename: string;
   /** Small variant for tight spaces like a recipe card corner. */
   compact?: boolean;
+  /** Filled (primary-colour) button instead of the default outlined one. */
+  solid?: boolean;
+  /** Quiet "⋮" button (for table rows) instead of the download icon. */
+  moreIcon?: boolean;
   /**
    * Called synchronously (wrap the state update in flushSync from the
    * caller) right when the button is pressed, before the menu opens.
@@ -24,6 +28,8 @@ export default function ExportMenu({
   targetRef,
   filename,
   compact = false,
+  solid = false,
+  moreIcon = false,
   onBeforeOpen,
 }: ExportMenuProps) {
   const [open, setOpen] = useState(false);
@@ -70,13 +76,21 @@ export default function ExportMenu({
         }}
         disabled={busy}
         className={
-          compact
+          compact && moreIcon
+            ? "flex h-8 w-8 items-center justify-center rounded-full text-inkMuted transition-colors hover:bg-forest-light disabled:opacity-60"
+            : compact
             ? "flex h-8 w-8 items-center justify-center rounded-full bg-paper/90 text-ink shadow-sm backdrop-blur transition-colors hover:bg-forest-light disabled:opacity-60"
-            : "flex items-center gap-2 rounded-full border border-line bg-paper px-4 py-2 text-sm font-medium text-ink transition-colors hover:bg-forest-light disabled:opacity-60"
+            : solid
+              ? "flex items-center gap-2 rounded-full bg-forest px-5 py-2 text-sm font-medium text-offwhite transition-colors hover:bg-forest-deep disabled:opacity-60"
+              : "flex items-center gap-2 rounded-full border border-line bg-paper px-4 py-2 text-sm font-medium text-ink transition-colors hover:bg-forest-light disabled:opacity-60"
         }
         title="Export"
       >
-        <IconDownload className={compact ? "h-4 w-4" : "h-4 w-4"} />
+        {compact && moreIcon ? (
+          <IconMoreVertical className="h-4 w-4" />
+        ) : (
+          <IconDownload className="h-4 w-4" />
+        )}
         {!compact && (busy ? "Exporting…" : "Export")}
         {!compact && <IconChevronDown className="h-3.5 w-3.5" />}
       </button>

@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .ai import generate_meal_plan_sync
-from .models import GroceryListItem, MealPlan, Recipe
+from .models import GroceryListItem, MealPlan, PlannedMeal, Recipe
 from .serializers import (
     GroceryListItemSerializer,
     MealPlanDetailSerializer,
@@ -115,7 +115,22 @@ class RecipeListView(APIView):
             .distinct()
             .order_by("-created_at")
         )
-        return Response(RecipeSerializer(recipes, many=True).data)
+        data = RecipeSerializer(recipes, many=True).data
+
+        # Which meal slot (breakfast/lunch/dinner/snack) each recipe was
+        # planned for — the Recipes page shows this as the "Category".
+        # Oldest plan first, so the most recent plan's slot wins.
+        categories = {
+            str(recipe_id): meal_type
+            for recipe_id, meal_type in PlannedMeal.objects.filter(
+                meal_plan__user=request.user
+            )
+            .order_by("meal_plan__week_start_date")
+            .values_list("recipe_id", "meal_type")
+        }
+        for item in data:
+            item["category"] = categories.get(item["id"], "")
+        return Response(data)
 
 
 class RecipeDetailView(APIView):
