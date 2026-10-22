@@ -40,6 +40,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -109,9 +110,15 @@ USE_TZ = True
 
 # --- Static files ---
 
-STATIC_URL = "static/"
+# --- Static files ---
 
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+STATIC_URL = "static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
+# --- Media (user uploads, e.g. avatars) ---
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
 
 # --- REST framework / JWT ---
 # Auth is read from an httpOnly cookie (see accounts/authentication.py)
@@ -140,8 +147,7 @@ AUTH_COOKIE_REFRESH_MAX_AGE = int(SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"].total_sec
 # Must be True in production (HTTPS) — off by default locally since
 # localhost is plain HTTP and browsers drop Secure cookies over HTTP.
 AUTH_COOKIE_SECURE = config("AUTH_COOKIE_SECURE", default=not DEBUG, cast=bool)
-AUTH_COOKIE_SAMESITE = "Lax"
-
+AUTH_COOKIE_SAMESITE = config("AUTH_COOKIE_SAMESITE", default="Lax")
 # --- CORS ---
 # The Vite dev server runs on :5173 by default. CORS_ALLOW_CREDENTIALS
 # is required so the browser will send/receive the auth cookies on
@@ -173,3 +179,13 @@ GOOGLE_CALENDAR_REDIRECT_URI = config(
     default="http://localhost:8000/api/calendar/callback/",
 )
 FRONTEND_URL = config("FRONTEND_URL", default="http://localhost:5173")
+
+# --- Production (behind Render's HTTPS proxy) ---
+
+CSRF_TRUSTED_ORIGINS = config("CSRF_TRUSTED_ORIGINS", default="", cast=Csv())
+
+if not DEBUG:
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
