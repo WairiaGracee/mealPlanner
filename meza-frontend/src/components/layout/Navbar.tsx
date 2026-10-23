@@ -37,7 +37,7 @@ export default function Navbar() {
             navigate("/");
           }}
         >
-          <Logo />
+          <Logo className="h-8 w-auto" showMark={false} />
         </a>
 
         <nav className="hidden items-center gap-7 font-robotoCondensed text-sm uppercase tracking-[0.15em] text-ink/70 lg:flex">
