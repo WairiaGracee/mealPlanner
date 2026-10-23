@@ -1,4 +1,4 @@
-import SectionLabel from "../ui/SectionLabel";
+
 
 function StatusBar({ dark = false }: { dark?: boolean }) {
   const color = dark ? "text-white" : "text-charcoal-deep";

@@ -1,6 +1,5 @@
 import { UserPlus, CalendarCheck, ShoppingBasket } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import SectionLabel from "../ui/SectionLabel";
 import ScrollReveal from "../ui/ScrollReveal";
 import Button from "../ui/Button";
 

@@ -2,7 +2,6 @@ import Button from "../ui/Button";
 import BackgroundSlideshow from "./BackgroundSlideshow";
 import { heroImages } from "../../data/heroImages";
 import { useNavigate } from "react-router-dom";
-import RegisterPage from "@/pages/RegisterPage";
 
 export default function Hero() {
   const navigate = useNavigate()
