@@ -1,7 +1,4 @@
 {
-  "redirects": [
-    { "source": "/vtest", "destination": "/login", "permanent": false }
-  ],
   "rewrites": [
     { "source": "/api/(.*)", "destination": "https://mealplanner-ki6s.onrender.com/api/$1" },
     { "source": "/(.*)", "destination": "/index.html" }
