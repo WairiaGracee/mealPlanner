@@ -14,8 +14,8 @@ from .who_guidelines import build_prompt_block, build_targets, find_issues
 logger = logging.getLogger(__name__)
 
 MODEL_NAME = "gemini-3.5-flash"
-MAX_RETRIES = 3
-RETRY_DELAY_SECONDS = 5
+MAX_RETRIES = 5
+RETRY_DELAY_SECONDS = 8
 MAX_WHO_REPAIRS = 1  # extra generations allowed to fix WHO violations
 
 PEXELS_SEARCH_URL = "https://api.pexels.com/v1/search"
@@ -160,27 +160,32 @@ def _build_prompt(profile) -> str:
 
 
 def _call_gemini(client, prompt: str) -> dict:
+    models = [settings.GEMINI_MODEL]
+    if settings.GEMINI_FALLBACK_MODEL:
+        models.append(settings.GEMINI_FALLBACK_MODEL)
+
     last_error = None
-    for attempt in range(1, MAX_RETRIES + 1):
-        try:
-            response = client.models.generate_content(
-                model=MODEL_NAME,
-                contents=prompt,
-                config={
-                    "response_mime_type": "application/json",
-                    "response_schema": RESPONSE_SCHEMA,
-                },
-            )
-            return json.loads(response.text)
-        except ServerError as exc:
-            # 503/500-class errors are usually transient overload on
-            # Google's side — worth a short retry before giving up.
-            last_error = exc
-            if attempt < MAX_RETRIES:
-                time.sleep(RETRY_DELAY_SECONDS)
+    for model in models:
+        for attempt in range(1, MAX_RETRIES + 1):
+            try:
+                response = client.models.generate_content(
+                    model=model,
+                    contents=prompt,
+                    config={
+                        "response_mime_type": "application/json",
+                        "response_schema": RESPONSE_SCHEMA,
+                    },
+                )
+                return json.loads(response.text)
+            except ServerError as exc:
+                # 503/500-class errors are usually transient overload on
+                # Google's side. Wait a bit longer after each failure.
+                last_error = exc
+                if attempt < MAX_RETRIES:
+                    time.sleep(RETRY_DELAY_SECONDS * attempt)
     raise last_error
 
-
+    
 def _flatten_meals(payload: dict) -> list:
     return [
         {"day_of_week": day["day_of_week"], **meal}

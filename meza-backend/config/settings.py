@@ -164,6 +164,8 @@ CORS_ALLOW_CREDENTIALS = True
 
 GOOGLE_CLIENT_ID = config("GOOGLE_CLIENT_ID", default="")
 GEMINI_API_KEY = config("GEMINI_API_KEY", default="")
+GEMINI_MODEL = config("GEMINI_MODEL", default="gemini-3.5-flash")
+GEMINI_FALLBACK_MODEL = config("GEMINI_FALLBACK_MODEL", default="")
 PEXELS_API_KEY = config("PEXELS_API_KEY", default="")
 
 # --- Google Calendar sync ---
