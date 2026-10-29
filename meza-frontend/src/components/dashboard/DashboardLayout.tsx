@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { ReactNode } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/authContext";
 import { usePreferences } from "../../context/PreferencesContext";
 import type { TranslationKey } from "../../i18n/translations";
@@ -104,12 +104,23 @@ const ACCOUNT_SECTION: NavSection = {
   ],
 };
 
+function isPathActive(pathname: string, path?: string) {
+  if (!path) return false;
+  return pathname === path || pathname.startsWith(`${path}/`);
+}
+
 export default function DashboardLayout({ userName, children }: DashboardLayoutProps) {
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const { user, logout } = useAuth();
   const { t } = usePreferences();
   const [openSections, setOpenSections] = useState<Record<string, boolean>>(() =>
-    Object.fromEntries(NAV_SECTIONS.map((s) => [s.label, Boolean(s.defaultOpen)]))
+    Object.fromEntries(
+      NAV_SECTIONS.map((s) => [
+        s.label,
+        Boolean(s.defaultOpen) || s.items.some((i) => isPathActive(pathname, i.path)),
+      ])
+    )
   );
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
@@ -192,7 +203,7 @@ export default function DashboardLayout({ userName, children }: DashboardLayoutP
         {isOpen && (
           <div className="mt-1 flex flex-col gap-1 font-robotoCondensed">
             {section.items.map((item) => {
-              const active = item.path === "/dashboard";
+              const active = isPathActive(pathname, item.path);
               const Icon = item.icon;
               return (
                 <button
@@ -224,11 +235,14 @@ export default function DashboardLayout({ userName, children }: DashboardLayoutP
         <div className="flex flex-col gap-1 font-robotoCondensed">
           {section.items.map((item) => {
             const Icon = item.icon;
+            const active = isPathActive(pathname, item.path);
             return (
-              <button
+               <button
                 key={item.label}
                 onClick={() => handleItemClick(item)}
-                className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm text-ink/80 transition-colors hover:bg-forest-light"
+                className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm transition-colors ${
+                  active ? "bg-forest text-offwhite" : "text-ink/80 hover:bg-forest-light"
+                }`}
               >
                 <Icon className="h-[18px] w-[18px] flex-shrink-0" />
                 {t(item.tKey)}

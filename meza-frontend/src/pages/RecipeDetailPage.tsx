@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import DashboardLayout from "../components/dashboard/DashboardLayout";
 import ExportMenu from "../components/export/ExportMenu";
 import RecipeExportCard from "../components/export/RecipeExportCard";
+import CollectionButtons from "../components/collection/CollectionButtons";
 import {
   IconChevronLeft,
   IconFlame,
@@ -121,10 +122,17 @@ export default function RecipeDetailPage() {
             </div>
           </div>
 
-          <ExportMenu
-            targetRef={exportRef}
-            filename={`meza-recipe-${recipe.name.toLowerCase().replace(/\s+/g, "-")}`}
-          />
+                    <div className="flex flex-wrap items-center gap-2">
+            <CollectionButtons
+              recipeId={recipe.id}
+              isFavourite={Boolean(recipe.is_favourite)}
+              isSaved={Boolean(recipe.is_saved)}
+            />
+            <ExportMenu
+              targetRef={exportRef}
+              filename={`intentionallyWell-recipe-${recipe.name.toLowerCase().replace(/\s+/g, "-")}`}
+            />
+          </div>
         </div>
 
         {recipe.description && (

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "../components/dashboard/DashboardLayout";
-import { IconFlame, IconLeaf, IconTarget } from "../components/dashboard/icons";
+import { IconFlame, IconTarget } from "../components/dashboard/icons";
 import { useAuth } from "../context/authContext";
 import { getActiveMealPlan, type MealPlanDetail } from "../lib/mealplans";
 import { ApiError } from "../lib/api";
@@ -178,19 +178,13 @@ export default function NutritionPage() {
         </div>
 
         <div className="rounded-2xl border border-line bg-paper p-5 sm:p-6">
-          <h2 className="flex items-center gap-2 font-display text-lg text-ink">
-            <IconLeaf className="h-4 w-4 text-forest" />
-            Meals this day
-          </h2>
+                    <h2 className="font-display text-lg text-ink">Meals this day</h2>
           <div className="mt-4 flex flex-col gap-3">
             {dayMeals.map((meal) => (
               <div
                 key={meal.id}
                 className="flex items-center gap-4 rounded-xl border border-line/70 p-3 transition-colors hover:bg-forest-light/30"
               >
-                <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-forest-light text-xl">
-                  {meal.recipe.emoji || "🍽️"}
-                </div>
                 <div className="flex-1">
                   <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-forest">
                     {meal.meal_type}

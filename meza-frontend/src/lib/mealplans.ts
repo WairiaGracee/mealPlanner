@@ -29,6 +29,8 @@ export interface Recipe {
   ingredients: { name: string; quantity: string; unit?: string }[];
   steps: string[];
   tags: string[];
+  is_favourite?: boolean;
+  is_saved?: boolean;
 }
 
 export interface PlannedMeal {
@@ -157,4 +159,30 @@ export function toggleGroceryItem(id: string, isChecked: boolean) {
   return api.patch<GroceryListItem>(`/mealplans/grocery-items/${id}/`, {
     is_checked: isChecked,
   });
+}
+
+export type CollectionKind = "favourite" | "saved";
+
+export interface MealPlanSummary {
+  id: string;
+  week_start_date: string;
+  is_active: boolean;
+  created_at: string;
+  meal_count: number;
+  preview: { name: string; emoji: string; image_url: string }[];
+}
+
+export function getMealPlanHistory() {
+  return api.get<MealPlanSummary[]>("/mealplans/");
+}
+
+export function getCollection(kind: CollectionKind) {
+  return api.get<Recipe[]>(`/mealplans/collection/?kind=${kind}`);
+}
+
+export function toggleCollection(recipeId: string, kind: CollectionKind) {
+  return api.post<{ kind: CollectionKind; active: boolean }>(
+    `/mealplans/recipes/${recipeId}/collection/`,
+    { kind }
+  );
 }

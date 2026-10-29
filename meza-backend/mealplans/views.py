@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .ai import generate_meal_plan_sync
-from .models import GroceryListItem, MealPlan, PlannedMeal, Recipe
+from .models import GroceryListItem, MealPlan, PlannedMeal, Recipe, SavedRecipe
 from .serializers import (
     GroceryListItemSerializer,
     MealPlanDetailSerializer,
@@ -128,8 +128,16 @@ class RecipeListView(APIView):
             .order_by("meal_plan__week_start_date")
             .values_list("recipe_id", "meal_type")
         }
+        flags = {}
+        for recipe_id, kind in SavedRecipe.objects.filter(user=request.user).values_list(
+            "recipe_id", "kind"
+        ):
+            flags.setdefault(str(recipe_id), set()).add(kind)
+
         for item in data:
             item["category"] = categories.get(item["id"], "")
+            item["is_favourite"] = "favourite" in flags.get(item["id"], set())
+            item["is_saved"] = "saved" in flags.get(item["id"], set())
         return Response(data)
 
 
@@ -145,4 +153,88 @@ class RecipeDetailView(APIView):
             Recipe.objects.filter(planned_meals__meal_plan__user=request.user).distinct(),
             pk=pk,
         )
-        return Response(RecipeSerializer(recipe).data)
+        data = RecipeSerializer(recipe).data
+        kinds = set(
+            SavedRecipe.objects.filter(user=request.user, recipe=recipe).values_list(
+                "kind", flat=True
+            )
+        )
+        data["is_favourite"] = "favourite" in kinds
+        data["is_saved"] = "saved" in kinds
+        return Response(data)
+
+VALID_KINDS = {value for value, _ in SavedRecipe.Kind.choices}
+
+
+class MealPlanListView(APIView):
+    """GET /api/mealplans/ — the user's finished meal plans, newest first
+    (powers the Meal History page)."""
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        plans = (
+            MealPlan.objects.filter(user=request.user, status=MealPlan.Status.READY)
+            .prefetch_related("meals__recipe")
+            .order_by("-created_at")
+        )
+        data = []
+        for plan in plans:
+            meals = list(plan.meals.all())
+            data.append(
+                {
+                    "id": str(plan.id),
+                    "week_start_date": plan.week_start_date,
+                    "is_active": plan.is_active,
+                    "created_at": plan.created_at,
+                    "meal_count": len(meals),
+                    "preview": [
+                        {
+                            "name": m.recipe.name,
+                            "emoji": m.recipe.emoji,
+                            "image_url": m.recipe.image_url,
+                        }
+                        for m in meals[:4]
+                    ],
+                }
+            )
+        return Response(data)
+
+
+class CollectionListView(APIView):
+    """GET /api/mealplans/collection/?kind=favourite|saved — the recipes
+    in one of the user's collections, most recently added first."""
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        kind = request.query_params.get("kind")
+        if kind not in VALID_KINDS:
+            return Response({"detail": "kind must be 'favourite' or 'saved'."}, status=400)
+        entries = SavedRecipe.objects.filter(user=request.user, kind=kind).select_related(
+            "recipe"
+        )
+        return Response(RecipeSerializer([e.recipe for e in entries], many=True).data)
+
+
+class CollectionToggleView(APIView):
+    """POST /api/mealplans/recipes/<id>/collection/ — body
+    {"kind": "favourite" | "saved"}. Adds the recipe to that collection,
+    or removes it if it's already there."""
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, pk):
+        kind = request.data.get("kind")
+        if kind not in VALID_KINDS:
+            return Response({"detail": "kind must be 'favourite' or 'saved'."}, status=400)
+        recipe = get_object_or_404(
+            Recipe.objects.filter(planned_meals__meal_plan__user=request.user).distinct(),
+            pk=pk,
+        )
+        entry, created = SavedRecipe.objects.get_or_create(
+            user=request.user, recipe=recipe, kind=kind
+        )
+        if not created:
+            entry.delete()
+        return Response({"kind": kind, "active": created})

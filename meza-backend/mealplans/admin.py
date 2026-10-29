@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import GroceryListItem, MealPlan, PlannedMeal, Recipe
+from .models import GroceryListItem, MealPlan, PlannedMeal, Recipe, SavedRecipe
 
 
 @admin.register(Recipe)
@@ -24,3 +24,8 @@ class MealPlanAdmin(admin.ModelAdmin):
     list_display = ["user", "week_start_date", "is_active"]
     list_filter = ["is_active"]
     inlines = [PlannedMealInline, GroceryListItemInline]
+
+@admin.register(SavedRecipe)
+class SavedRecipeAdmin(admin.ModelAdmin):
+    list_display = ["user", "recipe", "kind", "created_at"]
+    list_filter = ["kind"]

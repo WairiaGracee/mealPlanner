@@ -23,6 +23,11 @@ import RecipeGuidePage from "./pages/RecipeGuidePage";
 import GatherPage from "./pages/GatherPage";
 import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
 import TermsPage from "./pages/TermsPage";
+import FavouritesPage from "./pages/FavouritesPage";
+import SavedMealsPage from "./pages/SavedMealsPage";
+import MealHistoryPage from "./pages/MealHistoryPage";
+import ComingSoonPage from "./pages/ComingSoonPage";
+import HelpPage from "./pages/HelpPage";
 
 function App() {
   return (
@@ -105,6 +110,30 @@ function App() {
               </ProtectedRoute>
             }
           />
+                    <Route
+            path="/favourites"
+            element={
+              <ProtectedRoute>
+                <FavouritesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/saved-meals"
+            element={
+              <ProtectedRoute>
+                <SavedMealsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/meal-history"
+            element={
+              <ProtectedRoute>
+                <MealHistoryPage />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/games/recipe-quiz"
             element={
@@ -118,6 +147,38 @@ function App() {
             element={
               <ProtectedRoute>
                 <SettingsPage />
+              </ProtectedRoute>
+            }
+          />
+                    <Route
+            path="/games/cooking-challenges"
+            element={
+              <ProtectedRoute>
+                <ComingSoonPage title="Cooking Challenges" />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/games/pantry-match"
+            element={
+              <ProtectedRoute>
+                <ComingSoonPage title="Pantry Match" />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/games/build-your-plate"
+            element={
+              <ProtectedRoute>
+                <ComingSoonPage title="Build Your Plate" />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/help"
+            element={
+              <ProtectedRoute>
+                <HelpPage />
               </ProtectedRoute>
             }
           />

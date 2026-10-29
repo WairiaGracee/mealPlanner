@@ -2,9 +2,12 @@ from django.urls import path
 
 from .views import (
     ActiveMealPlanView,
+    CollectionListView,
+    CollectionToggleView,
     GenerateMealPlanView,
     GroceryItemUpdateView,
     MealPlanDetailView,
+    MealPlanListView,
     MealPlanStatusView,
     RecipeDetailView,
     RecipeListView,
@@ -12,6 +15,13 @@ from .views import (
 
 urlpatterns = [
     path("generate/", GenerateMealPlanView.as_view(), name="mealplan-generate"),
+        path("", MealPlanListView.as_view(), name="mealplan-list"),
+    path("collection/", CollectionListView.as_view(), name="mealplan-collection"),
+    path(
+        "recipes/<uuid:pk>/collection/",
+        CollectionToggleView.as_view(),
+        name="mealplan-collection-toggle",
+    ),
     path("active/", ActiveMealPlanView.as_view(), name="mealplan-active"),
     path("recipes/", RecipeListView.as_view(), name="mealplan-recipes"),
     path("recipes/<uuid:pk>/", RecipeDetailView.as_view(), name="mealplan-recipe-detail"),

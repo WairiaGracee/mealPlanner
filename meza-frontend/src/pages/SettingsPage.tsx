@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import DashboardLayout from "../components/dashboard/DashboardLayout";
+import { usePreferences } from "../context/PreferencesContext";
+import { THEME_PRESETS } from "../lib/preferences";
+import type { TranslationKey } from "../i18n/translations";
 import {
   IconCalendar,
   IconCheck,
@@ -18,7 +21,11 @@ import {
 import { ApiError } from "../lib/api";
 
 export default function SettingsPage() {
-  const { user } = useAuth();
+  const { user, updateProfile } = useAuth();
+  const navigate = useNavigate();
+  const { prefs, applyPreset, t } = usePreferences();
+  const [fullName, setFullName] = useState(user?.full_name ?? "");
+  const [savingName, setSavingName] = useState(false);
   const userName = user?.full_name?.split(" ")[0] ?? "there";
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -70,6 +77,21 @@ export default function SettingsPage() {
       cancelled = true;
     };
   }, [banner]);
+
+    async function handleSaveName() {
+    const trimmed = fullName.trim();
+    if (!trimmed || trimmed === user?.full_name) return;
+    setSavingName(true);
+    setBanner(null);
+    try {
+      await updateProfile({ fullName: trimmed });
+      setBanner({ kind: "success", message: "Name updated." });
+    } catch {
+      setBanner({ kind: "error", message: "Couldn't update your name. Please try again." });
+    } finally {
+      setSavingName(false);
+    }
+  }
 
   async function handleConnect() {
     setConnecting(true);
@@ -125,7 +147,7 @@ export default function SettingsPage() {
       <div className="mx-auto flex max-w-2xl flex-col gap-6 py-2">
         <div>
           <h1 className="font-display text-2xl text-ink">Settings</h1>
-          <p className="mt-1 text-sm text-inkMuted">Manage integrations for your account.</p>
+          <p className="mt-1 text-sm text-inkMuted">Manage your account, appearance and integrations.</p>
         </div>
 
         {banner && (
@@ -144,6 +166,86 @@ export default function SettingsPage() {
             {banner.message}
           </div>
         )}
+
+                <div className="rounded-2xl border border-line bg-paper p-6">
+          <h2 className="font-robotoCondensed text-base font-medium text-ink">Account</h2>
+          <div className="mt-4 flex flex-col gap-4">
+            <div className="flex flex-col gap-1.5">
+              <label
+                htmlFor="settings-name"
+                className="text-xs font-medium uppercase tracking-wide text-inkMuted"
+              >
+                Full name
+              </label>
+              <div className="flex flex-wrap gap-2">
+                <input
+                  id="settings-name"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  maxLength={150}
+                  className="min-w-0 flex-1 rounded-xl border border-line bg-paper px-4 py-2.5 text-sm text-ink outline-none focus:border-forest"
+                />
+                <button
+                  onClick={handleSaveName}
+                  disabled={savingName || !fullName.trim() || fullName.trim() === user?.full_name}
+                  className="rounded-full bg-forest px-5 py-2.5 text-sm font-medium text-offwhite transition-colors hover:bg-forest-deep disabled:opacity-60"
+                >
+                  {savingName ? "Saving…" : "Save"}
+                </button>
+              </div>
+            </div>
+
+            <dl className="grid gap-3 text-sm sm:grid-cols-3">
+              <div>
+                <dt className="text-xs font-medium uppercase tracking-wide text-inkMuted">Email</dt>
+                <dd className="mt-1 break-all text-ink">{user?.email}</dd>
+              </div>
+              <div>
+                <dt className="text-xs font-medium uppercase tracking-wide text-inkMuted">Sign-in</dt>
+                <dd className="mt-1 text-ink">
+                  {user?.auth_provider === "google" ? "Google" : "Email and password"}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-xs font-medium uppercase tracking-wide text-inkMuted">
+                  Member since
+                </dt>
+                <dd className="mt-1 text-ink">
+                  {user?.date_joined
+                    ? new Date(user.date_joined).toLocaleDateString(undefined, {
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric",
+                      })
+                    : "—"}
+                </dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-line bg-paper p-6">
+          <h2 className="font-robotoCondensed text-base font-medium text-ink">Appearance</h2>
+          <p className="mt-1 text-sm text-inkMuted">
+            Pick a look for your dashboard. Fine-tune fonts, card style and language from your
+            profile menu (top right).
+          </p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            {(Object.keys(THEME_PRESETS) as (keyof typeof THEME_PRESETS)[]).map((preset) => (
+              <button
+                key={preset}
+                onClick={() => applyPreset(preset)}
+                className={`rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
+                  prefs?.theme_preset === preset
+                    ? "border-forest bg-forest text-offwhite"
+                    : "border-line bg-paper text-ink hover:bg-forest-light"
+                }`}
+              >
+                {t(`theme_${preset}` as TranslationKey)}
+              </button>
+            ))}
+          </div>
+        </div>
 
         <div className="rounded-2xl border border-line bg-paper p-6">
           <div className="flex items-start gap-4">
@@ -196,6 +298,25 @@ export default function SettingsPage() {
               </div>
             </div>
           </div>
+          <div className="rounded-2xl border border-line bg-paper p-6 mt-6">
+            <h2 className="font-robotoCondensed text-base font-medium text-ink">More</h2>
+            <div className="mt-3 flex flex-col divide-y divide-line text-sm">
+              {[
+                { label: "Edit my meal preferences", path: "/onboarding" },
+                { label: "Help & Support", path: "/help" },
+                { label: "Privacy Policy", path: "/privacy" },
+                { label: "Terms of Service", path: "/terms" },
+              ].map((item) => (
+                <button
+                  key={item.path}
+                  onClick={() => navigate(item.path)}
+                  className="py-3 text-left text-ink transition-colors hover:text-forest"
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+        </div>
         </div>
       </div>
     </DashboardLayout>

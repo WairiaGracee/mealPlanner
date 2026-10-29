@@ -120,8 +120,8 @@ RESPONSE_SCHEMA = {
 def _build_prompt(profile) -> str:
     lines = [
         "You are a meal-planning assistant specializing exclusively in Kenyan cuisine.",
-        "Generate a full 7-day meal plan — breakfast, lunch, and dinner each day — "
-        "using only Kenyan dishes and ingredients commonly available in Kenya.",
+        "Generate a full 7-day meal plan of exactly 21 meals: day_of_week 0 (Monday) "
+        "through 6 (Sunday), and every day must include a breakfast, a lunch and a dinner — "
         "",
         "Person's preferences:",
         f"- Goal: {profile.get_goal_display() or 'General health'}",
@@ -185,6 +185,33 @@ def _call_gemini(client, prompt: str) -> dict:
                     time.sleep(RETRY_DELAY_SECONDS * attempt)
     raise last_error
 
+def _is_complete(payload: dict) -> bool:
+    """True only if all 7 days have breakfast, lunch and dinner."""
+    seen = {
+        (day.get("day_of_week"), meal.get("meal_type"))
+        for day in payload.get("days", [])
+        for meal in day.get("meals", [])
+    }
+    expected = {(d, m) for d in range(7) for m in ("breakfast", "lunch", "dinner")}
+    return expected <= seen
+
+
+def _call_complete(client, prompt: str) -> dict:
+    """Call Gemini and ask again if the plan comes back with missing meals."""
+    payload = _call_gemini(client, prompt)
+    for _ in range(2):
+        if _is_complete(payload):
+            return payload
+        payload = _call_gemini(
+            client,
+            prompt
+            + "\n\nYour previous answer was incomplete. Return ALL 7 days "
+            "(day_of_week 0 to 6), each with exactly one breakfast, one lunch and "
+            "one dinner (21 meals in total), plus the full grocery list.",
+        )
+    if not _is_complete(payload):
+        raise ValueError("The AI returned an incomplete plan. Please try again.")
+    return payload
     
 def _flatten_meals(payload: dict) -> list:
     return [
@@ -204,7 +231,7 @@ def generate_meal_plan_sync(meal_plan: MealPlan) -> None:
         meal_plan.save(update_fields=["status", "prompt"])
 
         client = genai.Client(api_key=settings.GEMINI_API_KEY)
-        payload = _call_gemini(client, prompt)
+        payload = _call_complete(client, prompt)
 
         # The model's numbers drift, so check the draft against the WHO
         # targets and ask for a corrected plan if any day breaks them.
@@ -220,7 +247,7 @@ def generate_meal_plan_sync(meal_plan: MealPlan) -> None:
                 "plan and grocery list again:\n"
                 + "\n".join(f"- {i}" for i in issues)
             )
-            payload = _call_gemini(client, fix_prompt)
+            payload = _call_complete(client, fix_prompt)
 
         _save_generated_plan(meal_plan, payload)
 

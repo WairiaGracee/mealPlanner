@@ -119,3 +119,29 @@ class GroceryListItem(models.Model):
     def __str__(self):
         return f"{self.name} ({self.quantity})"
 
+class SavedRecipe(models.Model):
+    """A recipe a user has favourited or saved for later."""
+
+    class Kind(models.TextChoices):
+        FAVOURITE = "favourite", "Favourite"
+        SAVED = "saved", "Saved"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="saved_recipes"
+    )
+    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, related_name="saved_by")
+    kind = models.CharField(max_length=20, choices=Kind.choices)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "recipe", "kind"], name="unique_saved_recipe_per_kind"
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.user.email} — {self.kind}: {self.recipe.name}"
+
