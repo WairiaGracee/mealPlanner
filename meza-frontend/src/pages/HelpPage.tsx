@@ -4,12 +4,12 @@ import DashboardLayout from "../components/dashboard/DashboardLayout";
 import { IconChevronDown, IconHome, IconSearch } from "../components/dashboard/icons";
 import { useAuth } from "../context/authContext";
 
-const SUPPORT_EMAIL = "hello@meza.app";
+const SUPPORT_EMAIL = "hello@intentionallyWell.app";
 
 const FAQS: { q: string; a: string }[] = [
   {
     q: "How are my meal plans created?",
-    a: "Meza builds a 7-day plan of Kenyan dishes around the answers you gave during onboarding: your goal, household, diet style, allergies, cooking time and budget. Each plan is also checked against WHO healthy-diet guidelines, and you can see how it measures up on the Nutrition page.",
+    a: "intentionallyWell builds a 7-day plan of Kenyan dishes around the answers you gave during onboarding: your goal, household, diet style, allergies, cooking time and budget. Each plan is also checked against WHO healthy-diet guidelines, and you can see how it measures up on the Nutrition page.",
   },
   {
     q: "How do I get a new meal plan?",
@@ -76,7 +76,7 @@ export default function HelpPage() {
           </nav>
           <h1 className="mt-3 font-display text-3xl text-ink sm:text-4xl">Help &amp; Support</h1>
           <p className="mt-1 text-sm text-inkMuted">
-            Quick answers about Meza, and a way to reach us if you need more.
+            Quick answers about intentionallyWell, and a way to reach us if you need more.
           </p>
         </div>
 

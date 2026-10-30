@@ -27,7 +27,7 @@ export default function TermsPage() {
       <section className="px-6 pb-8 pt-4 md:px-12">
         <SectionLabel>Terms of agreement</SectionLabel>
         <h1 className="mt-4 font-display text-4xl text-ink md:text-5xl">
-          The rules for using Meza
+          The rules for using intentionallyWell
         </h1>
         <p className="mt-3 max-w-2xl text-sm text-inkMuted">
           Last updated: 22 August 2026. By creating an account, you're
@@ -50,7 +50,7 @@ export default function TermsPage() {
 
         <Section title="2. What Meza is">
           <p>
-            Meza generates personalized, Kenyan-cuisine meal plans, recipes
+            intentionallyWell generates personalized, Kenyan-cuisine meal plans, recipes
             and grocery lists based on the information you provide during
             onboarding, using an AI model to help build each plan.
           </p>
@@ -58,7 +58,7 @@ export default function TermsPage() {
 
         <Section title="3. Not medical advice">
           <p>
-            Meza is a meal planning tool, not a medical service. Meal plans,
+            intentionallyWell is a meal planning tool, not a medical service. Meal plans,
             recipes and nutrition notes are provided for general informational
             purposes and are not a substitute for advice from a doctor,
             dietitian or other qualified professional — especially if you're
@@ -96,7 +96,7 @@ export default function TermsPage() {
 
         <Section title="7. Availability">
           <p>
-            Meza is provided on an "as available" basis. We may update,
+            intentionallyWell is provided on an "as available" basis. We may update,
             change or occasionally interrupt the service, including for
             maintenance, without that being a breach of these terms.
           </p>
@@ -104,7 +104,7 @@ export default function TermsPage() {
 
         <Section title="8. Ending your account">
           <p>
-            You can stop using Meza and request account deletion at any
+            You can stop using intentionallyWell and request account deletion at any
             time. We may suspend or terminate accounts that violate these
             terms.
           </p>
@@ -133,7 +133,7 @@ export default function TermsPage() {
           <p>
             Questions about these terms can be sent to{" "}
             <a href="mailto:hello@meza.app" className="text-forest underline">
-              hello@meza.app
+              hello@intentionallyWell.app
             </a>
             .
           </p>

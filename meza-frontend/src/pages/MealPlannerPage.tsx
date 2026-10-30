@@ -264,7 +264,7 @@ export default function MealPlannerPage() {
               <IconPencil className="h-4 w-4" />
               Edit plan
             </button>
-            <ExportMenu solid targetRef={exportRef} filename={`meza-meal-plan-${plan.week_start_date}`} />
+            <ExportMenu solid targetRef={exportRef} filename={`intentionallyWell-meal-plan-${plan.week_start_date}`} />
           </div>
         </div>
 

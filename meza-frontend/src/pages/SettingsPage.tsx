@@ -48,7 +48,7 @@ export default function SettingsPage() {
         kind: "error",
         message:
           reason === "no_refresh_token"
-            ? "Google didn't grant lasting access. Remove Meza from your Google account's Third-party access page, then try connecting again."
+            ? "Google didn't grant lasting access. Remove intentionallyWell from your Google account's Third-party access page, then try connecting again."
             : "Couldn't connect Google Calendar. Please try again.",
       });
     }

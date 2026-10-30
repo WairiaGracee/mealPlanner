@@ -30,7 +30,7 @@ export default function PrivacyPolicyPage() {
           Where your data goes, in plain language
         </h1>
         <p className="mt-3 max-w-2xl text-sm text-inkMuted">
-          Last updated: 22 August 2026. This explains what Meza collects,
+          Last updated: 22 August 2026. This explains what intentionallyWell collects,
           why, and who it's shared with — including the third parties (like
           Google) that help the app work.
         </p>
@@ -121,7 +121,7 @@ export default function PrivacyPolicyPage() {
         </Section>
 
         <Section title="7. Children">
-          <p>Meza isn't directed at children, and we don't knowingly collect data from anyone under 18.</p>
+          <p>intentionallyWell isn't directed at children, and we don't knowingly collect data from anyone under 18.</p>
         </Section>
 
         <Section title="8. Changes to this policy">
@@ -135,8 +135,8 @@ export default function PrivacyPolicyPage() {
         <Section title="9. Contact">
           <p>
             Questions about this policy or your data can be sent to{" "}
-            <a href="mailto:privacy@meza.app" className="text-forest underline">
-              privacy@meza.app
+            <a href="mailto:privacy@intentionallyWell.app" className="text-forest underline">
+              privacy@intentionallyWell.app
             </a>
             .
           </p>

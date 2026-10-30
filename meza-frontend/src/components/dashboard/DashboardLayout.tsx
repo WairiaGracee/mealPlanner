@@ -387,7 +387,7 @@ export default function DashboardLayout({ userName, children }: DashboardLayoutP
           <span className="flex h-12 w-12 items-center justify-center rounded-full bg-red-50 text-red-500">
             <IconLogout className="h-5 w-5" />
           </span>
-          <h2 className="mt-4 font-display text-lg text-ink">Log out of Meza?</h2>
+          <h2 className="mt-4 font-display text-lg text-ink">Log out of intentionallyWell?</h2>
           <p className="mt-1 text-sm text-inkMuted">
             You'll need to sign back in to see your meal plans and grocery list.
           </p>

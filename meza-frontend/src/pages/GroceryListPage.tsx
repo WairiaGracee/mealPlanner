@@ -146,7 +146,7 @@ export default function GroceryListPage() {
               </p>
             </div>
 
-            <ExportMenu targetRef={exportRef} filename={`meza-grocery-list-${plan.week_start_date}`} />
+            <ExportMenu targetRef={exportRef} filename={`intentionallyWell-grocery-list-${plan.week_start_date}`} />
           </div>
         </div>
 

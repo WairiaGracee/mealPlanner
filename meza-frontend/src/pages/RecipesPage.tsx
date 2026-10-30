@@ -411,7 +411,7 @@ function RecipeRowItem({
           compact
           moreIcon
           targetRef={exportRef}
-          filename={`meza-recipe-${recipe.name.toLowerCase().replace(/\s+/g, "-")}`}
+          filename={`intentionallyWell-recipe-${recipe.name.toLowerCase().replace(/\s+/g, "-")}`}
           onBeforeOpen={onBeforeExport}
         />
       </div>

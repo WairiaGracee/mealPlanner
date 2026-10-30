@@ -154,7 +154,7 @@ class SyncMealPlanToCalendarView(APIView):
                 for item in grocery_items
             ]
             event = _build_event(
-                title="🛒 Meza: Grocery shopping",
+                title="🛒 intentionallyWell: Grocery shopping",
                 description="This week's grocery list:\n" + "\n".join(lines),
                 day=shop_date,
                 hour=GROCERY_HOUR,
@@ -174,7 +174,7 @@ class SyncMealPlanToCalendarView(APIView):
             meal_date = meal_plan.week_start_date + timedelta(days=day_of_week)
             lines = [f"- {m.get_meal_type_display()}: {m.recipe.name}" for m in meals]
             event = _build_event(
-                title=f"🍽️ Meza: Meal prep — {meal_date.strftime('%A')}",
+                title=f"🍽️ intentionallyWell: Meal prep — {meal_date.strftime('%A')}",
                 description="\n".join(lines),
                 day=meal_date,
                 hour=MEAL_PREP_HOUR,

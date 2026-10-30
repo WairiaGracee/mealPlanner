@@ -105,7 +105,7 @@ const RecipeExportCard = forwardRef<HTMLDivElement, RecipeExportCardProps>(
           )}
 
           <div className="rounded-xl bg-forest-light/50 px-5 py-3 text-center text-xs text-inkMuted">
-            Made with Meza — Kenyan meal planning, personalized to you.
+            Made with intentionallyWell — Kenyan meal planning, personalized to you.
           </div>
         </div>
       </div>
