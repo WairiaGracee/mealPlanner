@@ -9,33 +9,16 @@ interface LogoProps {
 // // backgrounds still turns the whole thing white.
 // const LEAF = "M0 0C7 -7 8 -19 0 -30C-8 -19 -7 -7 0 0Z";
 
-export default function Logo({ className = "h-10 w-auto sm:h-12", showMark = true }: LogoProps) {
+export default function Logo({ className = "h-10 w-auto sm:h-12"}: LogoProps) {
   return (
-    <svg
-      viewBox={showMark ? "0 0 252 48" : "52 0 200 48"}
-      role="img"
-      aria-label="IntentionallyWell"
-      className={`flex-shrink-0 ${className}`}
-    >
-          {/* {showMark && (
-        <g transform="translate(23 45)">
-        <path d={LEAF} transform="rotate(-58) scale(0.7)" className="fill-forest" fillOpacity="0.55" />
-        <path d={LEAF} transform="rotate(58) scale(0.7)" className="fill-forest" fillOpacity="0.55" />
-        <path d={LEAF} transform="rotate(-29) scale(0.92)" className="fill-forest" fillOpacity="0.8" />
-        <path d={LEAF} transform="rotate(29) scale(0.92)" className="fill-forest" fillOpacity="0.8" />
-        <path d={LEAF} transform="scale(1.08)" className="fill-forest" />
-      </g>
-          )} */}
       <text
         x="52"
         y="31"
-        textLength="196"
         lengthAdjust="spacingAndGlyphs"
         className="fill-ink"
         style={{ fontFamily: "var(--font-display), Georgia, serif", fontSize: 25 }}
       >
         IntentionallyWell
       </text>
-    </svg>
   );
 }
