@@ -14,7 +14,7 @@ const RecipeExportCard = forwardRef<HTMLDivElement, RecipeExportCardProps>(
       <div ref={ref} className="w-[640px] bg-offwhite">
         <div className="flex flex-col gap-6 p-10">
           <div className="flex items-center justify-between border-b border-line pb-6">
-            <Logo className="h-10 w-auto" />
+            <Logo/>
             <p className="text-xs uppercase tracking-[0.12em] text-inkMuted">Recipe Card</p>
           </div>
 

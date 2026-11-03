@@ -36,7 +36,7 @@ export default function SideNav({ isOpen, onClose }: SideNavProps) {
       aria-label="Site navigation"
     >
       <div className="flex items-center justify-between px-6 py-6 md:px-12">
-        <Logo className="brightness-0 invert" />
+        <Logo/>
         <button
           onClick={onClose}
           aria-label="Close menu"

@@ -23,7 +23,7 @@ export default function AuthLayout({
         <BackgroundSlideshow images={heroImages} intervalMs={7000} variant="fade" />
         <div className="relative z-10 flex h-full flex-col justify-between p-8 lg:p-12">
           <Link to="/">
-            <Logo className="brightness-0 invert" />
+            <Logo/>
           </Link>
           <div>
             <p className="font-display text-2xl leading-snug text-offwhite lg:text-4xl">

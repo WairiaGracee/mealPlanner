@@ -20,7 +20,7 @@ const MealPlanExportCard = forwardRef<HTMLDivElement, MealPlanExportCardProps>(
       <div ref={ref} className="w-[720px] bg-offwhite">
         <div className="flex flex-col gap-6 p-10">
           <div className="flex items-center justify-between border-b border-line pb-6">
-            <Logo className="h-10 w-auto" />
+            <Logo/>
             <div className="text-right">
               <p className="font-display text-2xl text-ink">Weekly Meal Plan</p>
               <p className="text-sm text-inkMuted">{weekRange}</p>
