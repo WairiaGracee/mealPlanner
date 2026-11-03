@@ -30,3 +30,19 @@ export function disconnectGoogleCalendar() {
 export function syncActiveMealPlanToCalendar() {
   return api.post<CalendarSyncResult>("/calendar/sync/");
 }
+
+export interface ReminderSettings {
+  connected: boolean;
+  enabled: boolean;
+  meals: string[];
+  created?: number;
+  error?: string | null;
+}
+
+export function getReminderSettings() {
+  return api.get<ReminderSettings>("/calendar/reminders/");
+}
+
+export function saveReminderSettings(data: { enabled: boolean; meals: string[] }) {
+  return api.patch<ReminderSettings>("/calendar/reminders/", data);
+}

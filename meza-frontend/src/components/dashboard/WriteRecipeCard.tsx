@@ -21,9 +21,8 @@ export default function WriteRecipeCard() {
         </div>
         <p className="mt-2 text-sm opacity-80">Got a family favourite? Add it to your collection.</p>
       </div>
-      {/* TODO: point at the recipe editor once it exists */}
       <button
-        onClick={() => navigate("/recipes")}
+        onClick={() => navigate("/recipes/new")}
         className="self-start rounded-full bg-forest px-4 py-2 text-xs font-medium text-offwhite transition-colors hover:bg-forest-deep"
       >
         Start writing

@@ -91,3 +91,14 @@ def create_event(connection, event: dict) -> dict:
     )
     response.raise_for_status()
     return response.json()
+
+def delete_event(connection, event_id: str) -> None:
+    access_token = get_valid_access_token(connection)
+    response = requests.delete(
+        f"{EVENTS_URL.rstrip('/')}/{event_id}",
+        headers={"Authorization": f"Bearer {access_token}"},
+        timeout=10,
+    )
+    # 404/410 mean the event is already gone (for example the user deleted it).
+    if response.status_code not in (200, 204, 404, 410):
+        response.raise_for_status()

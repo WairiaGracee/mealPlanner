@@ -28,6 +28,9 @@ import SavedMealsPage from "./pages/SavedMealsPage";
 import MealHistoryPage from "./pages/MealHistoryPage";
 import ComingSoonPage from "./pages/ComingSoonPage";
 import HelpPage from "./pages/HelpPage";
+import BlogListPage from "./pages/BlogListPage";
+import BlogPostPage from "./pages/BlogPostPage";
+import WriteRecipePage from "./pages/WriteRecipePage";
 
 function App() {
   return (
@@ -40,6 +43,8 @@ function App() {
           <Route path="/meal-plans" element={<SampleMealPlansPage />} />
           <Route path="/meal-plans/:slug" element={<MealPlanDetailPage />} />
           <Route path="/about" element={<AboutPage />} />
+          <Route path="/blog" element={<BlogListPage />} />
+          <Route path="/blog/:id" element={<BlogPostPage />} />
           <Route path="/recipe-guide" element={<RecipeGuidePage />} />
           <Route path="/gather" element={<GatherPage />} />
           <Route path="/login" element={<LoginPage />} />
@@ -171,6 +176,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <ComingSoonPage title="Build Your Plate" />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/recipes/new"
+            element={
+              <ProtectedRoute>
+                <WriteRecipePage />
               </ProtectedRoute>
             }
           />

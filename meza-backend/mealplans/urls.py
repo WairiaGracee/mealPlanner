@@ -1,3 +1,6 @@
+import hmac
+
+from django.conf import settings
 from django.urls import path
 
 from .views import (
@@ -11,6 +14,8 @@ from .views import (
     MealPlanStatusView,
     RecipeDetailView,
     RecipeListView,
+    UserRecipeCreateView,
+    WeeklyPlansCronView,
 )
 
 urlpatterns = [
@@ -28,4 +33,6 @@ urlpatterns = [
     path("grocery-items/<uuid:pk>/", GroceryItemUpdateView.as_view(), name="grocery-item-update"),
     path("<uuid:pk>/", MealPlanDetailView.as_view(), name="mealplan-detail"),
     path("<uuid:pk>/status/", MealPlanStatusView.as_view(), name="mealplan-status"),
+    path("recipes/new/", UserRecipeCreateView.as_view(), name="recipe-new"),
+    path("cron/weekly/", WeeklyPlansCronView.as_view(), name="mealplan-cron-weekly"),
 ]

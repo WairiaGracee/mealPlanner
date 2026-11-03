@@ -1,4 +1,5 @@
 import type { BlogPost } from "../../types";
+import { Link } from "react-router-dom";
 
 interface BlogCardProps {
   post: BlogPost;
@@ -6,7 +7,8 @@ interface BlogCardProps {
 
 export default function BlogCard({ post }: BlogCardProps) {
   return (
-    <article className="group flex h-full flex-col overflow-visible rounded-2xl transition-all duration-300 hover:-translate-y-1">
+    <Link to={`/blog/${post.id}`} className="block h-full">
+      <article className="group flex h-full flex-col overflow-visible rounded-2xl transition-all duration-300 hover:-translate-y-1">
       {/* Photo */}
       <div className="relative h-56 overflow-hidden rounded-2xl">
         {post.image ? (
@@ -35,5 +37,6 @@ export default function BlogCard({ post }: BlogCardProps) {
         </p>
       </div>
     </article>
+  </Link>
   );
 }

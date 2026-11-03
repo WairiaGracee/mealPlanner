@@ -10,7 +10,6 @@ import MealPlanCard from "../components/dashboard/MealPlanCard";
 import GoalsCard from "../components/dashboard/GoalsCard";
 import ShoppingListStrip from "../components/dashboard/ShoppingListStrip";
 import QuoteCard from "../components/dashboard/QuoteCard";
-import Flourish from "../components/dashboard/Flourish";
 import { useAuth } from "../context/authContext";
 import { usePreferences } from "../context/PreferencesContext";
 import { getActiveMealPlan, type MealPlanDetail } from "../lib/mealplans";
@@ -115,9 +114,6 @@ export default function DashboardPage() {
           </div>
           <QuoteCard />
 
-          <div className="xl:col-span-3">
-            <Flourish name={userName} />
-          </div>
         </div>
       </div>
     </DashboardLayout>

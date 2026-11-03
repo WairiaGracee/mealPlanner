@@ -28,6 +28,14 @@ class Recipe(models.Model):
     tags = models.JSONField(default=list, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name="own_recipes",
+    )
 
     def __str__(self):
         return self.name

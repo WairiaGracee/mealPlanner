@@ -1,4 +1,7 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
+import { ApiError } from "../../lib/api";
+import { getFeaturedReviews, submitReview } from "../../lib/Reviews";
+import type { Testimonial } from "../../types";
 import { testimonials } from "../../data/testimonials";
 import SectionLabel from "../ui/SectionLabel";
 import Button from "../ui/Button";
@@ -19,22 +22,67 @@ function Stars({ rating }: { rating: number }) {
 
 export default function Testimonials() {
   const [rating, setRating] = useState(5);
+  const [name, setName] = useState("");
+  const [location, setLocation] = useState("");
   const [message, setMessage] = useState("");
+  const [sending, setSending] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [shown, setShown] = useState<Testimonial[]>(testimonials);
 
-  function handleSubmit(e: FormEvent<HTMLFormElement>) {
+  // Show the reviews the owner has featured. If there are none (or the
+  // request fails), the sample reviews above stay on screen.
+  useEffect(() => {
+    let cancelled = false;
+    getFeaturedReviews()
+      .then((reviews) => {
+        if (cancelled || reviews.length === 0) return;
+        setShown(
+          reviews.map((r) => ({
+            id: r.id,
+            name: r.name,
+            location: r.location,
+            quote: r.message,
+            rating: r.rating as Testimonial["rating"],
+          }))
+        );
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    // TODO: wire to POST /api/reviews once the Django backend is available
-    setSubmitted(true);
+    setError(null);
+    setSending(true);
+    try {
+      await submitReview({
+        name: name.trim(),
+        location: location.trim(),
+        rating,
+        message: message.trim(),
+      });
+      setSubmitted(true);
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 429) {
+        setError("You've sent several reviews in a short time. Please try again later.");
+      } else {
+        setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+      }
+    } finally {
+      setSending(false);
+    }
   }
 
   return (
     <section id="reviews" className="bg-offwhite px-6 py-20 text-ink md:px-12">
       {/* Centered intro, matching the reference's "Our Passionate Team" framing */}
       <div className="text-center">
-        <SectionLabel variant="light" className="justify-center">
-          What people are cooking
-        </SectionLabel>
+        <h2 className="mt-4 font-display text-4xl text-forest-deep md:text-5xl text-center">
+            What People Are Cooking
+        </h2>
         <p className="mx-auto mt-6 max-w-2xl text-base leading-relaxed text-inkMuted">
           Real weeks, real plates, real feedback — a few notes from people
           who've handed their weekly cooking over to intentionallyWell.
@@ -43,7 +91,7 @@ export default function Testimonials() {
 
       {/* Reviewer row — ringed circular photos, caps name, location as the role line */}
       <div className="mt-16 grid grid-cols-1 gap-12 sm:grid-cols-3">
-        {testimonials.map((t, i) => (
+          {shown.map((t, i) => (
           <ScrollReveal key={t.id} delayMs={i * 120}>
             <div className="flex flex-col items-center text-center">
               <div className="rounded-full border-2 border-forest/30 p-1.5">
@@ -77,6 +125,35 @@ export default function Testimonials() {
           </p>
         ) : (
           <form onSubmit={handleSubmit} className="mt-4 flex flex-col items-center gap-4">
+            <div className="grid w-full gap-4 sm:grid-cols-2">
+              <div className="text-left">
+                <label htmlFor="review-name" className="font-mono text-xs uppercase tracking-[0.2em] text-forest">
+                  Your name
+                </label>
+                <input
+                  id="review-name"
+                  required
+                  maxLength={80}
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="e.g. Wanjiru K."
+                  className="mt-2 w-full rounded-lg border border-line bg-white px-4 py-3 text-sm text-ink placeholder:text-inkMuted focus-visible:outline focus-visible:outline-2 focus-visible:outline-forest"
+                />
+              </div>
+              <div className="text-left">
+                <label htmlFor="review-location" className="font-mono text-xs uppercase tracking-[0.2em] text-forest">
+                  Town (optional)
+                </label>
+                <input
+                  id="review-location"
+                  maxLength={80}
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  placeholder="e.g. Nairobi"
+                  className="mt-2 w-full rounded-lg border border-line bg-white px-4 py-3 text-sm text-ink placeholder:text-inkMuted focus-visible:outline focus-visible:outline-2 focus-visible:outline-forest"
+                />
+              </div>
+            </div>
             <div>
               <label htmlFor="rating" className="font-mono text-xs uppercase tracking-[0.2em] text-forest">
                 Your rating
@@ -109,13 +186,16 @@ export default function Testimonials() {
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 rows={4}
+                maxLength={1000}
                 placeholder="Tell us how your week of meals went..."
                 className="mt-2 w-full resize-none rounded-lg border border-line bg-white px-4 py-3 text-sm text-ink placeholder:text-inkMuted focus-visible:outline focus-visible:outline-2 focus-visible:outline-forest"
               />
             </div>
 
-            <Button type="submit" variant="primary">
-              Submit review
+            {error && <p className="text-sm text-clay">{error}</p>}
+
+            <Button type="submit" variant="primary" disabled={sending}>
+              {sending ? "Sending…" : "Submit review"}
             </Button>
           </form>
         )}

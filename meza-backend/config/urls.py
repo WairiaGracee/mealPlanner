@@ -10,6 +10,7 @@ urlpatterns = [
     path("api/mealplans/", include("mealplans.urls")),
     path("api/calendar/", include("calendarsync.urls")),
     path("api/preferences/", include("preferences.urls")),
+    path("api/reviews/", include("reviews.urls")),
 ]
 
 if settings.DEBUG:

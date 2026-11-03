@@ -55,3 +55,39 @@ class MealPlanDetailSerializer(serializers.ModelSerializer):
             for m in obj.meals.all()
         ]
         return summarize(meals, build_targets(obj.user.profile))
+class UserRecipeSerializer(serializers.ModelSerializer):
+    """What a person can fill in when writing their own recipe."""
+
+    ingredients = serializers.ListField(
+        child=serializers.DictField(), allow_empty=False, max_length=60
+    )
+    steps = serializers.ListField(
+        child=serializers.CharField(max_length=1000, allow_blank=True),
+        allow_empty=False,
+        max_length=40,
+    )
+
+    class Meta:
+        model = Recipe
+        fields = [
+            "name", "description", "region", "prep_minutes",
+            "calories", "emoji", "ingredients", "steps",
+        ]
+
+    def validate_ingredients(self, value):
+        cleaned = []
+        for item in value:
+            name = str(item.get("name", "")).strip()[:100]
+            if not name:
+                continue
+            quantity = str(item.get("quantity", "")).strip()[:50]
+            cleaned.append({"name": name, "quantity": quantity})
+        if not cleaned:
+            raise serializers.ValidationError("Add at least one ingredient.")
+        return cleaned
+
+    def validate_steps(self, value):
+        cleaned = [s.strip() for s in value if s.strip()]
+        if not cleaned:
+            raise serializers.ValidationError("Add at least one step.")
+        return cleaned

@@ -37,7 +37,7 @@ export default function Navbar() {
             navigate("/");
           }}
         >
-          <Logo className="h-8 w-auto" showMark={false} />
+          <Logo />
         </a>
 
         <nav className="hidden items-center gap-7 font-robotoCondensed text-sm uppercase tracking-[0.15em] text-ink/70 lg:flex">
@@ -53,9 +53,9 @@ export default function Navbar() {
           <button onClick={() => navigate("/gather")} className="transition-colors hover:text-forest">
             GATHER
           </button>
-          <a href="#blog" className="transition-colors hover:text-forest">
+          <button onClick={() => navigate("/blog")} className="transition-colors hover:text-forest">
             BLOGS
-          </a>
+          </button>
         </nav>
 
         <div className="flex items-center gap-2 sm:gap-3">

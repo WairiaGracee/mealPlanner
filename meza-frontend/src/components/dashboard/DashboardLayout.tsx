@@ -258,7 +258,7 @@ export default function DashboardLayout({ userName, children }: DashboardLayoutP
     return (
       <>
         <button onClick={() => navigate("/")} className="px-7 text-left">
-          <Logo className="h-10 w-auto" />
+          <Logo />
         </button>
 
         <button
@@ -299,7 +299,7 @@ export default function DashboardLayout({ userName, children }: DashboardLayoutP
           <aside className="relative flex h-full w-72 max-w-[80vw] flex-shrink-0 flex-col bg-paper py-7 shadow-2xl">
             <div className="flex items-center justify-between px-5">
               <button onClick={() => navigate("/")} className="text-left">
-                <Logo className="h-10 w-auto" />
+                <Logo />
               </button>
               <button
                 onClick={() => setMobileNavOpen(false)}
@@ -341,7 +341,7 @@ export default function DashboardLayout({ userName, children }: DashboardLayoutP
             >
               <IconMenu className="h-5 w-5" />
             </button>
-            <Logo className="h-9 w-auto" />
+            <Logo />
           </div>
           <div className="flex items-center gap-4">
             <IconBell className="h-5 w-5 text-inkMuted" />

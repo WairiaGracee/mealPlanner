@@ -6,6 +6,7 @@ export interface BlogPost {
   readTime: string;
   image?: string;
   tag: string;
+  body: string[];
 }
 
 export interface Testimonial {

@@ -1,18 +1,24 @@
+import hmac
+
+from django.conf import settings
+
 import threading
 from datetime import date, timedelta
 
+from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from rest_framework import permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .ai import generate_meal_plan_sync
+from .weekly import maybe_start_weekly_plan, run_in_thread, run_weekly_batch
 from .models import GroceryListItem, MealPlan, PlannedMeal, Recipe, SavedRecipe
 from .serializers import (
     GroceryListItemSerializer,
     MealPlanDetailSerializer,
     MealPlanStatusSerializer,
     RecipeSerializer,
+    UserRecipeSerializer,
 )
 
 
@@ -37,7 +43,7 @@ class GenerateMealPlanView(APIView):
         )
 
         thread = threading.Thread(
-            target=generate_meal_plan_sync, args=(meal_plan,), daemon=True
+            target=run_in_thread, args=(meal_plan.pk,), daemon=True
         )
         thread.start()
 
@@ -85,7 +91,14 @@ class ActiveMealPlanView(APIView):
         )
         if meal_plan is None:
             return Response({"detail": "No meal plan yet."}, status=404)
-        return Response(MealPlanDetailSerializer(meal_plan).data)
+
+            # A new week has started: quietly prepare the next plan in the background.
+            try:
+                maybe_start_weekly_plan(request.user)
+            except Exception:
+                pass
+
+            return Response(MealPlanDetailSerializer(meal_plan).data)
 
 
 class GroceryItemUpdateView(APIView):
@@ -102,6 +115,11 @@ class GroceryItemUpdateView(APIView):
             item.save(update_fields=["is_checked"])
         return Response(GroceryListItemSerializer(item).data)
 
+def _recipes_visible_to(user):
+    """Recipes from the user's own meal plans, plus recipes they wrote."""
+    return Recipe.objects.filter(
+        Q(planned_meals__meal_plan__user=user) | Q(created_by=user)
+    ).distinct()
 
 class RecipeListView(APIView):
     """GET /api/mealplans/recipes/ — every distinct recipe that has
@@ -110,11 +128,7 @@ class RecipeListView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
-        recipes = (
-            Recipe.objects.filter(planned_meals__meal_plan__user=request.user)
-            .distinct()
-            .order_by("-created_at")
-        )
+        recipes = _recipes_visible_to(request.user).order_by("-created_at")
         data = RecipeSerializer(recipes, many=True).data
 
         # Which meal slot (breakfast/lunch/dinner/snack) each recipe was
@@ -149,10 +163,7 @@ class RecipeDetailView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, pk):
-        recipe = get_object_or_404(
-            Recipe.objects.filter(planned_meals__meal_plan__user=request.user).distinct(),
-            pk=pk,
-        )
+        recipe = get_object_or_404(_recipes_visible_to(request.user), pk=pk)
         data = RecipeSerializer(recipe).data
         kinds = set(
             SavedRecipe.objects.filter(user=request.user, recipe=recipe).values_list(
@@ -228,13 +239,40 @@ class CollectionToggleView(APIView):
         kind = request.data.get("kind")
         if kind not in VALID_KINDS:
             return Response({"detail": "kind must be 'favourite' or 'saved'."}, status=400)
-        recipe = get_object_or_404(
-            Recipe.objects.filter(planned_meals__meal_plan__user=request.user).distinct(),
-            pk=pk,
-        )
+        recipe = get_object_or_404(_recipes_visible_to(request.user), pk=pk)
         entry, created = SavedRecipe.objects.get_or_create(
             user=request.user, recipe=recipe, kind=kind
         )
         if not created:
             entry.delete()
         return Response({"kind": kind, "active": created})
+
+class UserRecipeCreateView(APIView):
+    """POST /api/mealplans/recipes/new/ — a recipe the user writes themselves.
+    It is saved to their Saved Meals automatically."""
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        serializer = UserRecipeSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        recipe = serializer.save(created_by=request.user, tags=["My recipe"])
+        SavedRecipe.objects.get_or_create(
+            user=request.user, recipe=recipe, kind=SavedRecipe.Kind.SAVED
+        )
+        return Response(RecipeSerializer(recipe).data, status=201)
+
+class WeeklyPlansCronView(APIView):
+    """POST /api/mealplans/cron/weekly/ — called by a scheduler. Protected by
+    a shared secret in the X-Cron-Secret header."""
+
+    authentication_classes = []
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        secret = settings.CRON_SECRET
+        supplied = request.headers.get("X-Cron-Secret", "")
+        if not secret or not hmac.compare_digest(supplied, secret):
+            return Response({"detail": "Forbidden."}, status=403)
+        threading.Thread(target=run_weekly_batch, daemon=True).start()
+        return Response({"detail": "Weekly generation started."}, status=202)

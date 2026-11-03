@@ -186,3 +186,18 @@ export function toggleCollection(recipeId: string, kind: CollectionKind) {
     { kind }
   );
 }
+
+export interface NewRecipeInput {
+  name: string;
+  description: string;
+  region: string;
+  prep_minutes: number | null;
+  calories: number | null;
+  emoji: string;
+  ingredients: { name: string; quantity: string }[];
+  steps: string[];
+}
+
+export function createRecipe(data: NewRecipeInput) {
+  return api.post<Recipe>("/mealplans/recipes/new/", data);
+}

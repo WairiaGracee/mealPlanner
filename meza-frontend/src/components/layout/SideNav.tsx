@@ -12,7 +12,7 @@ const NAV_ITEMS = [
   { label: "Home", href: "/" },
   { label: "Meals", href: "#dishes" },
   { label: "How it works", href: "#how-it-works" },
-  { label: "Blog", href: "#blog" },
+  { label: "Blog", href: "/blog" },
   { label: "Reviews", href: "#reviews" },
 ];
 
@@ -36,7 +36,7 @@ export default function SideNav({ isOpen, onClose }: SideNavProps) {
       aria-label="Site navigation"
     >
       <div className="flex items-center justify-between px-6 py-6 md:px-12">
-        <Logo className="h-16 w-auto sm:h-18 brightness-0 invert" />
+        <Logo className="brightness-0 invert" />
         <button
           onClick={onClose}
           aria-label="Close menu"

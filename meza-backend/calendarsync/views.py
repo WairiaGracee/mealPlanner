@@ -10,6 +10,8 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework import permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from .models import GoogleCalendarConnection, ReminderPreference
+from .sync import MEAL_HOURS, clear_future_reminders, sync_meal_reminders
 
 from mealplans.models import MealPlan
 
@@ -113,7 +115,11 @@ class GoogleCalendarDisconnectView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
-        GoogleCalendarConnection.objects.filter(user=request.user).delete()
+        connection = GoogleCalendarConnection.objects.filter(user=request.user).first()
+        if connection is not None:
+            clear_future_reminders(request.user, connection)
+            ReminderPreference.objects.filter(user=request.user).update(enabled=False)
+            connection.delete()
         return Response(status=204)
 
 
@@ -203,3 +209,52 @@ def _build_event(title: str, description: str, day, hour: int, reminder_minutes:
             "overrides": [{"method": "popup", "minutes": reminder_minutes}],
         },
     }
+
+@method_decorator(csrf_exempt, name="dispatch")
+class ReminderSettingsView(APIView):
+    """GET   /api/calendar/reminders/ — the user's meal-reminder settings.
+    PATCH /api/calendar/reminders/ — body {"enabled": bool, "meals": [...]}.
+    Saving also updates the reminders on their calendar right away."""
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def _payload(self, user, **extra):
+        prefs = ReminderPreference.objects.filter(user=user).first()
+        return {
+            "connected": GoogleCalendarConnection.objects.filter(user=user).exists(),
+            "enabled": bool(prefs and prefs.enabled),
+            "meals": prefs.meals if prefs else [],
+            **extra,
+        }
+
+    def get(self, request):
+        return Response(self._payload(request.user))
+
+    def patch(self, request):
+        enabled = bool(request.data.get("enabled"))
+        meals = request.data.get("meals", [])
+        if not isinstance(meals, list) or any(m not in MEAL_HOURS for m in meals):
+            return Response({"detail": "Choose from breakfast, lunch or dinner."}, status=400)
+        if enabled and not meals:
+            return Response({"detail": "Pick at least one meal to be reminded about."}, status=400)
+        if not GoogleCalendarConnection.objects.filter(user=request.user).exists():
+            return Response({"detail": "Connect Google Calendar first."}, status=400)
+
+        ReminderPreference.objects.update_or_create(
+            user=request.user, defaults={"enabled": enabled, "meals": meals}
+        )
+
+        meal_plan = (
+            MealPlan.objects.filter(
+                user=request.user, is_active=True, status=MealPlan.Status.READY
+            )
+            .order_by("-created_at")
+            .first()
+        )
+        result = {"created": 0, "error": None}
+        if meal_plan is not None:
+            result = sync_meal_reminders(request.user, meal_plan)
+
+        return Response(
+            self._payload(request.user, created=result["created"], error=result["error"])
+        )

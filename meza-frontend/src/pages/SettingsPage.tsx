@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import MealRemindersCard from "../components/settings/MealRemindersCard";
 import DashboardLayout from "../components/dashboard/DashboardLayout";
 import { usePreferences } from "../context/PreferencesContext";
 import { THEME_PRESETS } from "../lib/preferences";
@@ -298,6 +299,7 @@ export default function SettingsPage() {
               </div>
             </div>
           </div>
+          <MealRemindersCard />
           <div className="rounded-2xl border border-line bg-paper p-6 mt-6">
             <h2 className="font-robotoCondensed text-base font-medium text-ink">More</h2>
             <div className="mt-3 flex flex-col divide-y divide-line text-sm">
