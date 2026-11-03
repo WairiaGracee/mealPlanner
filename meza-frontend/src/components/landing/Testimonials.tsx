@@ -3,7 +3,6 @@ import { ApiError } from "../../lib/api";
 import { getFeaturedReviews, submitReview } from "../../lib/Reviews";
 import type { Testimonial } from "../../types";
 import { testimonials } from "../../data/testimonials";
-import SectionLabel from "../ui/SectionLabel";
 import Button from "../ui/Button";
 import ScrollReveal from "../ui/ScrollReveal";
 import Avatar from "../ui/Avatar";

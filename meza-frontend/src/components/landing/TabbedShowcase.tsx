@@ -1,7 +1,6 @@
 import { useState } from "react";
 import type { ShowcaseTabId } from "../../types";
 import SectionLabel from "../ui/SectionLabel";
-import WavyLine from "./wavyLine";
 import PhoneMockup from "./PhoneMockup";
 
 interface Tab {
@@ -48,7 +47,6 @@ export default function TabbedShowcase() {
 
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-offwhite via-offwhite to-forest-light/40 px-6 py-20 text-ink md:px-12">
-      <WavyLine />
 
       <div className="relative z-10">
         <SectionLabel variant="light">The product, in motion</SectionLabel>
