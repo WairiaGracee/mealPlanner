@@ -15,8 +15,7 @@ export default function Logo() {
         x="52"
         y="31"
         lengthAdjust="spacingAndGlyphs"
-        className="fill-ink"
-        style={{ fontFamily: "var(--font-display), Georgia, serif", fontSize: 25 }}
+        className="fill-ink text-[25px] sm:text-[19px]"
       >
         IntentionallyWell
       </text>
