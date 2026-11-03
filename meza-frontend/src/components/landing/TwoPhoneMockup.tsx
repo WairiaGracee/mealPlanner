@@ -38,7 +38,7 @@ function LandingScreen() {
   return (
     <div className="flex h-full flex-col bg-offwhite p-3 pt-9 text-ink">
       <div className="flex items-center justify-between">
-        <Logo className="h-4 w-auto" />
+        <Logo/>
         <div className="flex flex-col gap-1">
           <span className="h-px w-4 bg-ink" />
           <span className="h-px w-4 bg-ink" />

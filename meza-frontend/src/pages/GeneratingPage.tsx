@@ -79,7 +79,7 @@ export default function GeneratingPage() {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-offwhite bg-fruit-pattern bg-repeat px-6 py-16 text-center">
-      <Logo className="mb-8" />
+      <Logo/>
 
       {connectionError ? (
         <p className="max-w-sm text-sm text-clay">{connectionError}</p>
