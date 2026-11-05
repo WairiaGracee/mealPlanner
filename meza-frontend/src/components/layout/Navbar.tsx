@@ -68,7 +68,7 @@ export default function Navbar() {
           </Button>
           <Button
             variant="primary"
-            className="px-4 py-2 text-xs hidden sm:px-6 sm:py-3 sm:text-sm"
+            className="px-4 py-2 text-xs sm:px-6 sm:py-3 sm:text-sm"
             onClick={() => navigate("/register")}
           >
             Get started
