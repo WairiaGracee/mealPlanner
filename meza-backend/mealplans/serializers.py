@@ -49,12 +49,15 @@ class MealPlanDetailSerializer(serializers.ModelSerializer):
         ]
 
     def get_weekly_nutrition(self, obj):
+        profile = getattr(obj.user, "profile", None)
         meals = [
             {"day_of_week": m.day_of_week,
              **{f: getattr(m.recipe, f) for f in NUTRIENT_FIELDS}}
             for m in obj.meals.all()
         ]
-        return summarize(meals, build_targets(obj.user.profile))
+        if profile is None or not meals:
+            return None
+        return summarize(meals, build_targets(profile))
 class UserRecipeSerializer(serializers.ModelSerializer):
     """What a person can fill in when writing their own recipe."""
 

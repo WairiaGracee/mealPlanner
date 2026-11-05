@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import DashboardLayout from "../components/dashboard/DashboardLayout";
 import DashboardGreeting from "../components/dashboard/DashboardGreeting";
 import NutritionHeroCard from "../components/dashboard/NutritionHeroCard";
@@ -12,7 +12,7 @@ import ShoppingListStrip from "../components/dashboard/ShoppingListStrip";
 import QuoteCard from "../components/dashboard/QuoteCard";
 import { useAuth } from "../context/authContext";
 import { usePreferences } from "../context/PreferencesContext";
-import { getActiveMealPlan, type MealPlanDetail } from "../lib/mealplans";
+import { generateMealPlan, getActiveMealPlan, type MealPlanDetail } from "../lib/mealplans";
 import { ApiError } from "../lib/api";
 import { buildDayMealPlans, getTodayDayOfWeek, macrosForDay } from "../lib/planTransforms";
 
@@ -23,11 +23,17 @@ export default function DashboardPage() {
   const [plan, setPlan] = useState<MealPlanDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [hasNoPlan, setHasNoPlan] = useState(false);
+  const [loadError, setLoadError] = useState(false);
+  const [starting, setStarting] = useState(false);
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
 
     async function load() {
+      setLoading(true);
+      setLoadError(false);
+      setHasNoPlan(false);
       try {
         const activePlan = await getActiveMealPlan();
         if (cancelled) return;
@@ -36,6 +42,8 @@ export default function DashboardPage() {
         if (cancelled) return;
         if (err instanceof ApiError && err.status === 404) {
           setHasNoPlan(true);
+        } else {
+          setLoadError(true);
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -46,7 +54,7 @@ export default function DashboardPage() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [attempt]);
 
   const userName = user?.full_name?.split(" ")[0] ?? "there";
 
@@ -60,20 +68,70 @@ export default function DashboardPage() {
     );
   }
 
+  async function handleGenerate() {
+    setStarting(true);
+    try {
+      const started = await generateMealPlan();
+      navigate(`/generating/${started.id}`);
+    } catch (err) {
+      setStarting(false);
+      if (err instanceof ApiError && err.status === 400) {
+        navigate("/onboarding");
+      } else {
+        setLoadError(true);
+      }
+    }
+  }
+
+  const messageCard = (
+    title: string,
+    body: string,
+    buttonLabel: string,
+    onClick: () => void
+  ) => (
+    <DashboardLayout userName={userName}>
+      <div className="mx-auto flex max-w-md flex-col items-center gap-4 pt-24 text-center">
+        <h1 className="font-display text-2xl text-ink">{title}</h1>
+        <p className="text-sm text-inkMuted">{body}</p>
+        <button
+          onClick={onClick}
+          disabled={starting}
+          className="rounded-full bg-forest px-6 py-2.5 text-sm font-medium text-offwhite transition-colors hover:bg-forest-deep disabled:opacity-60"
+        >
+          {starting ? "Starting…" : buttonLabel}
+        </button>
+      </div>
+    </DashboardLayout>
+  );
+
+  if (loadError) {
+    return messageCard(
+      "We couldn't load your meal plan",
+      "This is usually temporary, especially if the app has been quiet for a while. Please try again.",
+      "Try again",
+      () => setAttempt((a) => a + 1)
+    );
+  }
+
+  if (plan && (plan.status === "pending" || plan.status === "generating")) {
+    return <Navigate to={`/generating/${plan.id}`} replace />;
+  }
+
+  if (plan && plan.status === "failed") {
+    return messageCard(
+      "We couldn't build your plan this time",
+      "Sometimes the AI service is busy. Your answers are saved, so just try again.",
+      "Generate my plan",
+      handleGenerate
+    );
+  }
+
   if (hasNoPlan || !plan) {
-    return (
-      <DashboardLayout userName={userName}>
-        <div className="mx-auto flex max-w-md flex-col items-center gap-4 pt-24 text-center">
-          <h1 className="font-display text-2xl text-ink">{t("dashboard_no_plan_title")}</h1>
-          <p className="text-sm text-inkMuted">{t("dashboard_no_plan_body")}</p>
-          <button
-            onClick={() => navigate("/onboarding")}
-            className="rounded-full bg-forest px-6 py-2.5 text-sm font-medium text-offwhite transition-colors hover:bg-forest-deep"
-          >
-            {t("dashboard_start_onboarding")}
-          </button>
-        </div>
-      </DashboardLayout>
+    return messageCard(
+      "No meal plan yet",
+      "Tap below to build your week of Kenyan meals. If you haven't told us about yourself yet, we'll take you to a few quick questions first.",
+      "Build my plan",
+      handleGenerate
     );
   }
 

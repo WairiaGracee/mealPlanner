@@ -2,8 +2,14 @@ from django.conf import settings
 from django.contrib import admin
 from django.urls import include, path
 from django.conf.urls.static import static
+from django.http import JsonResponse
+
+
+def health(request):
+    return JsonResponse({"status": "ok"})
 
 urlpatterns = [
+    path("api/health/", health, name="health"),
     path("admin/", admin.site.urls),
     path("api/auth/", include("accounts.urls")),
     path("api/profile/", include("profiles.urls")),

@@ -10,6 +10,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from django.utils import timezone
 
 from .weekly import maybe_start_weekly_plan, run_in_thread, run_weekly_batch
 from .models import GroceryListItem, MealPlan, PlannedMeal, Recipe, SavedRecipe
@@ -21,6 +22,19 @@ from .serializers import (
     UserRecipeSerializer,
 )
 
+STALE_AFTER = timedelta(minutes=15)
+
+
+def _expire_if_stale(meal_plan):
+    """A plan stuck 'pending' or 'generating' (for example because the server
+    restarted halfway) is marked failed so the user can simply try again."""
+    if (
+        meal_plan.status in (MealPlan.Status.PENDING, MealPlan.Status.GENERATING)
+        and timezone.now() - meal_plan.created_at > STALE_AFTER
+    ):
+        meal_plan.status = MealPlan.Status.FAILED
+        meal_plan.error_message = "This took too long. Please try again."
+        meal_plan.save(update_fields=["status", "error_message"])
 
 def _monday_of_this_week():
     today = date.today()
@@ -35,6 +49,9 @@ class GenerateMealPlanView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
+        profile = getattr(request.user, "profile", None)
+        if profile is None or not profile.onboarding_completed:
+            return Response({"detail": "Please finish onboarding first."}, status=400)
         MealPlan.objects.filter(user=request.user, is_active=True).update(is_active=False)
         meal_plan = MealPlan.objects.create(
             user=request.user,
@@ -59,6 +76,7 @@ class MealPlanStatusView(APIView):
 
     def get(self, request, pk):
         meal_plan = get_object_or_404(MealPlan, pk=pk, user=request.user)
+        _expire_if_stale(meal_plan)
         return Response(MealPlanStatusSerializer(meal_plan).data)
 
 
@@ -90,6 +108,7 @@ class ActiveMealPlanView(APIView):
             .first()
         )
         if meal_plan is None:
+            _expire_if_stale(meal_plan)
             return Response({"detail": "No meal plan yet."}, status=404)
 
             # A new week has started: quietly prepare the next plan in the background.
