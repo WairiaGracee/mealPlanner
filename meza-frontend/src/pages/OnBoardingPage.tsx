@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/context/authContext";
+import { useAuth } from "../context/authContext";
 import Logo from "../components/ui/Logo";
 import ProgressBar from "../components/onboarding/ProgressBar";
 import OptionCard from "../components/onboarding/OptionCard";
