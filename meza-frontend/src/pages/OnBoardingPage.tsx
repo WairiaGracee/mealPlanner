@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/context/authContext";
 import Logo from "../components/ui/Logo";
 import ProgressBar from "../components/onboarding/ProgressBar";
 import OptionCard from "../components/onboarding/OptionCard";
@@ -34,6 +35,7 @@ const STEP_CAPTIONS: { title: string; subtitle: string }[] = [
 
 export default function OnboardingPage() {
   const navigate = useNavigate();
+  const {refreshUser } = useAuth();
   const [step, setStep] = useState(1);
   const [data, setData] = useState<OnboardingData>(EMPTY_ONBOARDING_DATA);
   const [submitting, setSubmitting] = useState(false);
@@ -94,11 +96,15 @@ export default function OnboardingPage() {
     if (step === TOTAL_STEPS) {
       setError("");
       setSubmitting(true);
-      try {
-        await submitOnboardingProfile(data);
-        const plan = await generateMealPlan();
-        navigate(`/generating/${plan.id}`);
-      } catch (err) {
+    try {
+      await submitOnboardingProfile(data);
+
+      // Refresh the authenticated user to get updated onboarding status
+      await refreshUser();
+
+      const plan = await generateMealPlan();
+       navigate(`/generating/${plan.id}`);
+    } catch (err) {
         setError(
           err instanceof ApiError
             ? err.message || "Couldn't start building your plan."

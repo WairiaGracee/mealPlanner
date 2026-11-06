@@ -19,6 +19,7 @@ interface AuthContextValue {
   // profile drawer. Pass a File for avatar, omit either field to leave
   // it unchanged.
   updateProfile: (data: { fullName?: string; avatar?: File }) => Promise<AuthUser>;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -54,6 +55,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(loggedIn);
   }
 
+
+    async function refreshUser() {
+    try {
+      const fresh = await api.get<AuthUser>("/auth/me/");
+      setUser(fresh);
+    } catch {
+      // keep the current user if the refresh fails
+    }
+  }
+
   async function logout() {
     await api.post("/auth/logout/");
     setUser(null);
@@ -70,7 +81,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, loading, register, login, loginWithGoogle, logout, updateProfile }}
+      value={{ user, loading, register, login, loginWithGoogle, logout, updateProfile, refreshUser }}
     >
       {children}
     </AuthContext.Provider>
