@@ -6,7 +6,7 @@ import time
 import requests
 from django.conf import settings
 from google import genai
-from google.genai.errors import ServerError
+from google.genai.errors import APIError, ServerError
 
 from .models import GroceryListItem, MealPlan, PlannedMeal, Recipe
 from .who_guidelines import build_prompt_block, build_targets, find_issues
@@ -177,10 +177,14 @@ def _call_gemini(client, prompt: str) -> dict:
                     },
                 )
                 return json.loads(response.text)
-            except ServerError as exc:
-                # 503/500-class errors are usually transient overload on
-                # Google's side. Wait a bit longer after each failure.
+            except APIError as exc:
                 last_error = exc
+                if exc.code == 429:
+                    # This model's quota is used up. Retrying won't help, so
+                    # move straight on to the next model.
+                    break
+                if not isinstance(exc, ServerError):
+                    raise  # a real error (bad key, bad request): stop here
                 if attempt < MAX_RETRIES:
                     time.sleep(RETRY_DELAY_SECONDS * attempt)
     raise last_error
