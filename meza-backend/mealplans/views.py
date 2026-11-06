@@ -108,16 +108,17 @@ class ActiveMealPlanView(APIView):
             .first()
         )
         if meal_plan is None:
-            _expire_if_stale(meal_plan)
             return Response({"detail": "No meal plan yet."}, status=404)
 
-            # A new week has started: quietly prepare the next plan in the background.
-            try:
-                maybe_start_weekly_plan(request.user)
-            except Exception:
-                pass
+        _expire_if_stale(meal_plan)
 
-            return Response(MealPlanDetailSerializer(meal_plan).data)
+        # A new week has started: quietly prepare the next plan in the background.
+        try:
+            maybe_start_weekly_plan(request.user)
+        except Exception:
+            pass
+
+        return Response(MealPlanDetailSerializer(meal_plan).data)
 
 
 class GroceryItemUpdateView(APIView):
